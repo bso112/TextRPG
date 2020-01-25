@@ -1,0 +1,89 @@
+#include <iostream>
+
+using namespace std;
+
+void main()
+{
+	//int count = 3;
+	//char(*arrptr)[4] = new char[count][4];
+	//
+	////널문자 초기화
+	////for (int i = 0; i < count; ++i)
+	////{
+	////	for (int j = 0; j < 4; ++j)
+	////	{
+	////		arrptr[i][j] = '\0';
+	////	}
+	////}
+
+	//memset(arrptr, '\0', (sizeof(char) * 4) * count);
+	//arrptr[0][0] = 'a';
+
+	////널문자로 초기화 안하면 이상하게 나옴
+	//cout << arrptr[0] << endl;
+
+
+	int itemCount = 3;
+	//char(*items)[100] = new char[itemCount][100];
+	//널문자로 채움
+	//memset(items, '\0', (sizeof(char) * 100) * itemCount);
+
+	char items[3][100] = {};
+	FILE* fp = nullptr;
+
+	errno_t err = fopen_s(&fp, "../weapon.txt", "rt");
+	if (0 == err)
+	{
+		//아이템 인덱스
+		int col = 0;
+		int row = 0;
+		int c = 0;
+
+		//파일이 끝날때까지 문자를 받아옴
+		while (EOF != c)
+		{
+			//문자를 하나하나 가져옴
+			c = getc(fp);
+
+			//주석 무시
+			if ('*' == c)
+			{
+				//개행할때까지 컨티뉴
+				while ('\n' != c)
+				{
+					c = getc(fp);
+					continue;
+				}
+				//이제 다음 줄이지만 c는 여전히 '\n'이니 컨티뉴
+				continue;
+			}
+
+			//개행할시 다음 행에 넣기
+			if ('\n' == c)
+			{
+				++col;
+				row = 0;
+			}
+			//아니면 열을 증가시키며 받아온 문자 넣기. 
+			else
+			{
+				items[col][row] = c;
+				++row;
+			}
+
+		}
+
+
+		for (int i = 0; i < itemCount; ++i)
+		{
+			cout << items[i] << endl;
+		}
+		fclose(fp);
+
+		//delete[] items;
+		//items = nullptr;
+	}
+	else
+		cout << "파일 개방 실패!" << endl;
+
+}
