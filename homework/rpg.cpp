@@ -27,7 +27,7 @@ typedef struct tagChracter
 	int maxExp;
 	int currExp;
 	int gold;
-	WEAPON weapon;
+	WEAPON* weapon;
 
 }CHARACTER;
 
@@ -47,29 +47,32 @@ void PrintMonster(const MONSTER* const monster);
 MONSTER* CreateMonster(int selection);
 void LevelUp(CHARACTER* characer);
 void OnGetExp(CHARACTER* character);
-void printWeaponInfo(const WEAPON wepon);
+void printWeaponInfo(const WEAPON weapon);
+void printWeaponInfo(const WEAPON* weapon);
 //텍스트파일에서 모든 아이템 정보를 가져와 2차원배열 포인터에 동적할당하고, 아이템의 갯수를 반환한다. 
 //배열방이 1000개인 이유는 텍스트파일의 한 라인이 최대 1000개의 문자로 이루어진다고 가정했기 때문이다.
 //아이템의 수를 리턴한다.
 int GetWeaponInfo(char(**items)[1000]);
 //텍스트파일의 모든 아이템을 생성한다. 아이템의 수를 리턴한다.
 int CreateAllWeapons(WEAPON** weapons);
-//아이템 아이디를 받아 하나의 아이템을 생성한다.
-WEAPON* CreateWeapon(int id);
+//아이템 아이디를 받아 하나의 아이템을 생성한다(동적할당). 모든 아이템을 가진 배열과 그 길이, 아이디를 인수로 받는다.
+WEAPON* CreateWeapon(WEAPON weapons[], int length, int id);
 //문자열을 int로 파싱한다.
 int StringToInt(const char arr[]);
+
 
 void main()
 {
 
-	WEAPON* weapons = nullptr;
-	int weaponsCount = CreateAllWeapons(&weapons);
-	
-	cout << "아이템의 수: " << weaponsCount << endl;
 
-	delete[] weapons;
-	weapons = nullptr;
-	exit(0);
+	//아이템 정보를 담은 일차원 배열
+	WEAPON* weapons = nullptr;
+	//처음에 모든 무기 만들어둠
+	int weaponsCount = CreateAllWeapons(&weapons);
+
+	//플레이어 캐릭터
+	CHARACTER* character = nullptr;
+
 	//캐릭터 생성화면
 	while (true)
 	{
@@ -81,7 +84,14 @@ void main()
 		//종료
 		if (iSelect_character == 4)
 		{
+			if (character != nullptr)
+			{
+				delete character->weapon;
+				delete character;
+			}
+			delete[] weapons;
 			cout << "게임을 종료합니다." << endl;
+
 			return;
 		}
 
@@ -105,6 +115,13 @@ void main()
 			if (iSelect_dungeon == 5)
 			{
 				cout << "게임을 종료합니다." << endl;
+				if (character != nullptr)
+				{
+					delete character->weapon;
+					delete character;
+				}
+				delete[] weapons;
+
 				return;
 			}
 
@@ -196,69 +213,26 @@ void main()
 					cout << "상점에 어서오세요!" << endl;
 					cout << "잔액: " << character->gold << endl;
 
+					cout << '\n' << "0. 나가기" << endl;
 
-
-
-
-
-					WEAPON sword;
-					strcpy_s(sword.name, "철검");
-					sword.attack = 3;
-					strcpy_s(sword.description, "평범한 검이다. 조금 무겁다");
-					sword.price = 100;
-
-					WEAPON staff;
-					strcpy_s(staff.name, "수정지팡이");
-					staff.attack = 3;
-					strcpy_s(staff.description, "견습 마법사가 가볍게 쓸 수 있는 지팡이다.");
-					staff.price = 100;
-
-					WEAPON suriken;
-					strcpy_s(suriken.name, "수리검");
-					suriken.attack = 3;
-					strcpy_s(suriken.description, "작은 사이즈의 수리검이다. 가볍고 단단하다.");
-					suriken.price = 100;
-
-					cout << '\n' << "4. 나가기" << endl;
-					cout << '\n' << "==========================================" << '\n' << endl;
-					cout << "1. 철검" << endl;
-					printWeaponInfo(sword);
-					cout << '\n' << "==========================================" << '\n' << endl;
-					cout << "2. 수정지팡이" << endl;
-					printWeaponInfo(staff);
-					cout << '\n' << "==========================================" << '\n' << endl;
-					cout << "3. 수리검" << endl;
-					printWeaponInfo(suriken);
-
-					int itemSelect;
-					cin >> itemSelect;
-
-					if (itemSelect == 4)
-						break;
-
-					WEAPON choosen;
-
-					switch (itemSelect)
+					for (int i = 0; i < weaponsCount; ++i)
 					{
-					case 1:
-						choosen = sword;
-						break;
-					case 2:
-						choosen = staff;
-						break;
-					case 3:
-						choosen = suriken;
-						break;
-					default:
-						cout << "잘못된 선택입니다." << endl;
+						printWeaponInfo(weapons[i]);
 					}
 
-					if (character->gold >= choosen.price)
+					
+					int itemSelect = 0;
+					cin >> itemSelect;
+
+					WEAPON* weapon = CreateWeapon(weapons, weaponsCount, itemSelect);
+
+
+					if (character->gold >= weapon->price)
 					{
-						cout << choosen.name << "을(를) 구입하였습니다!" << endl;
-						character->weapon = choosen;
-						character->attack += character->weapon.attack;
-						character->gold -= choosen.price;
+						cout << weapon->name << "을(를) 구입하였습니다!" << endl;
+						character->weapon = weapon;
+						character->attack += character->weapon->attack;
+						character->gold -= weapon->price;
 					}
 					else
 						cout << "돈이 부족합니다!" << endl;
@@ -271,6 +245,16 @@ void main()
 		}
 	}
 
+	
+
+}
+
+WEAPON* CreateWeapon(WEAPON weapons[], int length, int id)
+{
+	WEAPON* weapon = new WEAPON;
+	memcpy(weapon, &(weapons[id - 1]), sizeof(WEAPON));
+	return weapon;
+
 }
 
 int CreateAllWeapons(WEAPON** weapons)
@@ -281,13 +265,6 @@ int CreateAllWeapons(WEAPON** weapons)
 
 	//무기정보를 동적으로 할당받는다.
 	int itemCount = GetWeaponInfo(&weaponInfos);
-
-	//for (int i = 0; i < itemCount; ++i)
-	//{
-	//	cout << weaponInfos[i] << endl;
-	//}
-
-	//cout << "아이템 수: " << itemCount << endl;
 
 	*weapons = new WEAPON[itemCount];
 
@@ -305,7 +282,7 @@ int CreateAllWeapons(WEAPON** weapons)
 
 		//쉼표단위로 파싱하기
 		for (int j = 0; j < len; ++j)
-		{	
+		{
 			//word의 경계값을 넘어가면 무시
 			if (col > 5 || row > 799)
 			{
@@ -323,7 +300,7 @@ int CreateAllWeapons(WEAPON** weapons)
 				break;
 			}
 			//이 모든게 아니면 데이터를 word 에 넣는다.
-			else 
+			else
 			{
 				word[col][row] = weaponInfos[i][j];
 				++row;
@@ -336,13 +313,11 @@ int CreateAllWeapons(WEAPON** weapons)
 		strcpy_s((*weapons)[i].description, 800, word[3]);
 		(*weapons)[i].price = StringToInt(word[4]);
 		strcpy_s((*weapons)[i].occupation, 16, word[5]);
-		printWeaponInfo((*weapons)[i]);
-
 	}
 
 	delete[] weaponInfos;
 	weaponInfos = nullptr;
-	
+
 	return itemCount;
 }
 
@@ -387,7 +362,7 @@ int GetWeaponInfo(char(**items)[1000])
 
 		//파일이 끝날때까지 문자를 받아옴
 		while (EOF != c)
-		{	
+		{
 
 			//문자를 하나하나 가져옴
 			c = getc(fp);
@@ -461,11 +436,24 @@ int GetWeaponInfo(char(**items)[1000])
 
 }
 
-void printWeaponInfo(const WEAPON wepon)
+void printWeaponInfo(const WEAPON weapon)
 {
-	cout << "이름 : " << wepon.name << endl;
-	cout << "공격 : " << wepon.attack << endl;
-	cout << wepon.description << endl;
+	cout << '\n' << "==========================================" << '\n\n';
+	cout << weapon.id << '. ' << weapon.name << '\n';
+	cout << "공격 : " << weapon.attack << '\n';
+	cout << weapon.description << '\n';
+	cout << "가격 : " << weapon.price << '\n';
+	cout << "직업 : " << weapon.occupation << '\n';
+}
+
+void printWeaponInfo(const WEAPON* weapon)
+{
+	cout << '\n' << "==========================================" << '\n\n';
+	cout << weapon->id << '. ' << weapon->name << '\n';
+	cout << "공격 : " << weapon->attack << '\n';
+	cout << weapon->description << '\n';
+	cout << "가격 : " << weapon->price << '\n';
+	cout << "직업 : " << weapon->occupation << '\n';
 }
 
 void OnGetExp(CHARACTER* character)
@@ -501,11 +489,11 @@ void PrintCharacter(const CHARACTER* const character)
 {
 	cout << "직업: " << character->name << endl;
 	cout << "레벨: " << character->level << endl;
-	cout << "공격력: " << character->attack << "(+" << character->weapon.attack << ")" << endl;
+	cout << "공격력: " << character->attack << "(+" << character->weapon->attack << ")" << endl;
 	cout << "체력: " << character->currHealth << " / " << character->maxHealth << endl;
 	cout << "경험치: " << character->currExp << " / " << character->maxExp << endl;
 	cout << "골드: " << character->gold << endl;
-	cout << "장비: " << character->weapon.name << endl;
+	cout << "장비: " << character->weapon->name << endl;
 
 }
 
@@ -588,7 +576,7 @@ CHARACTER* CreateCharacter(int selection)
 	character->gold = 0;
 	character->level = 1;
 	character->weapon = {};
-	strcpy_s(character->weapon.name, "미착용");
+	strcpy_s(character->weapon->name, "미착용");
 
 	return character;
 }
