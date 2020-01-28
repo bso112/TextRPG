@@ -1,8 +1,0 @@
-*is a annotation mark.
-*id,name,attack,description,price,accupation
-*first line is size of item
-*each line has to be under 1000 characters.
-3
-1,iron sword,3,It's an ordinary sword. little heavy.,100,warrior
-2,crystal staff,3,It's a staff that can be used lightly by an apprentice wizard.,100,wizard
-3,suriken,3,It's a small sized surikeen. be light and firm.,100,thief

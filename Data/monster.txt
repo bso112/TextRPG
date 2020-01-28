@@ -1,0 +1,9 @@
+*스펠링 오타와 쉼표누락에 주의!
+*첫 줄은 항목의 수
+*id, name[16], GFX_PATH[30], attack, maxHealth, currHealth, exp, gold, habitat(1부터)
+3
+1,slime,../GFX/slime.txt,5,30,30,10,11,1
+2,orgre,../GFX/orgre.txt,15,60,60,30,31,2
+3,golem,../GFX/golem.txt,30,90,90,60,61,3
+4,goblin,../GFX/goblin.txt,10,20,20,10,20,1
+5,thiefGoblin,../GFX/thiefGoblin.txt,10,20,20,10,100,2

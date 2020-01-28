@@ -1,30 +1,33 @@
-#include <iostream>
+ï»¿#include <iostream>
 
 using namespace std;
 
-
-int stringToInt(char arr[])
+void printFile(char fileName[30])
 {
-	//¹®ÀÚ¿­->¼ıÀÚ ÆÄ½Ì
-	int result = 0;
-	int len = strlen(arr);
+	FILE* fp;
+	errno_t err = fopen_s(&fp, fileName, "rt");
 
-	for (int i = 0; i < len; ++i)
+	if (0 == err)
 	{
-		int tmp = arr[i] - '0';
-		result += (int)(tmp * (pow((double)10, (double)len-i-1)));
+		char ch = 0;
+		while (true)
+		{
+			int cnt = fread(&ch, sizeof(char), 1, fp);
+			if (1 > cnt)
+				break;
+			cout << ch;
+
+		}
+		fclose(fp);
 	}
 
-	// 1  1 
-	// 2  10
-	// 3  100
-	// 10ÀÇ 0½ÂÀº 1 / 1½ÂÀº 10 ...
-
-	return result;
+	cout << '\n';
 }
 
 void main()
 {
-	cout << stringToInt("1546");
-} 
+
+	printFile("../slime.txt");
+	
+}
 

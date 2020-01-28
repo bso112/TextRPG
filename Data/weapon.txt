@@ -1,0 +1,9 @@
+*is a annotation mark.
+*first line is size of item
+*each line has to be under 1000 characters.
+*enum eOccupation { WARRIOR, WIZARD, THIEF};
+*id,name,attack,description,price,eOccupation
+3
+1,iron sword,3,It's an ordinary sword. little heavy.,100,0
+2,crystal staff,3,It's a staff that can be used lightly by an apprentice wizard.,100,1
+3,suriken,3,It's a small sized surikeen. be light and firm.,100,2

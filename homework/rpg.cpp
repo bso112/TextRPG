@@ -1,20 +1,25 @@
 #include <iostream>
 #include <math.h>
-
-
+#include <Windows.h>
+#include <time.h>
 using namespace std;
+
+//플레이어 직업
+enum eOccupation { WARRIOR, WIZARD, THIEF };
+//몬스터의 서식지
+enum eHabitat { BIGINNER=1, INTERMEDIATE, INTENCE, HELL};
 
 typedef struct tagWeapon
 {
-	//아이템 아이디
-	int id;
+	//아이템 아이디(1부터 시작)
+	int id = 0;
+	//직업
 	char name[16];
 	int attack;
 	//아이템 설명. 
 	char description[800];
 	int price;
-	//장착할 수 있는 직업
-	char occupation[16];
+	eOccupation  occupation;
 }WEAPON;
 
 typedef struct tagChracter
@@ -28,47 +33,94 @@ typedef struct tagChracter
 	int currExp;
 	int gold;
 	WEAPON* weapon;
+	eOccupation  occupation;
 
 }CHARACTER;
 
 typedef struct tagMonster
-{
+{	
+	//1부터 시작
+	int id = 0;
 	char name[16];
+	char GFX_PATH[30];
 	int attack;
 	int maxHealth;
 	int currHealth;
 	int exp;
 	int gold;
+	//서식지
+	eHabitat habitat;
+
 }MONSTER;
 
 void PrintCharacter(const CHARACTER* const character);
 CHARACTER* CreateCharacter(int selection);
 void PrintMonster(const MONSTER* const monster);
-MONSTER* CreateMonster(int selection);
+//해당 id의 몬스터를 스폰한다.
+MONSTER* CreateMonster(MONSTER monsters[], int id);
+//해당 서식지에 사는 몬스터들 중 랜덤으로 스폰한다.
+MONSTER* CreateMonster(MONSTER monsters[], int length, eHabitat habitat);
 void LevelUp(CHARACTER* characer);
 void OnGetExp(CHARACTER* character);
 void printWeaponInfo(const WEAPON weapon);
 void printWeaponInfo(const WEAPON* weapon);
-//텍스트파일에서 모든 아이템 정보를 가져와 2차원배열 포인터에 동적할당하고, 아이템의 갯수를 반환한다. 
-//배열방이 1000개인 이유는 텍스트파일의 한 라인이 최대 1000개의 문자로 이루어진다고 가정했기 때문이다.
-//아이템의 수를 리턴한다.
-int GetWeaponInfo(char(**items)[1000]);
+//텍스트 파일을 읽고 함수 내부에서 이차원 배열에 동적으로 할당한다.(한줄 = 한 항목) 항목의 수를 반환한다.
+int GetInfo(char(**items)[1000], char path[30]);
 //텍스트파일의 모든 아이템을 생성한다. 아이템의 수를 리턴한다.
 int CreateAllWeapons(WEAPON** weapons);
 //아이템 아이디를 받아 하나의 아이템을 생성한다(동적할당). 모든 아이템을 가진 배열과 그 길이, 아이디를 인수로 받는다.
-WEAPON* CreateWeapon(WEAPON weapons[], int length, int id);
+WEAPON* CreateWeapon(WEAPON weapons[], int id);
 //문자열을 int로 파싱한다.
 int StringToInt(const char arr[]);
+//플레이어가 죽었을때
+void OnCharacterDie(CHARACTER* character)
+{
+	if (character != nullptr)
+	{
+		delete character->weapon;
+		delete character;
+	}
+
+}
+//게임을 종료할때 자원을 반환한다.
+void FinalizeGame(CHARACTER* character, WEAPON* weapons)
+{
+	if (character != nullptr)
+	{
+		delete character->weapon;
+		delete character;
+	}
+	if (weapons != nullptr)
+	{
+		delete[] weapons;
+	}
+	cout << "게임을 종료합니다." << endl;
+}
+void Save(CHARACTER* character);
+CHARACTER* Load();
+void EnterMarket(CHARACTER* character, WEAPON* weapons, int weaponsCount);
+//캐릭터 리스폰 때문에 이중포인터로 받아야함. 임시변수 포인터에 대입하면 의미가 없으니까.
+void EnterDungeon(CHARACTER** character, MONSTER monsters[], int monsterCnt, eHabitat habitat, int characterSelection);
+void eOccupationToString(eOccupation occupation, char result[16]);
+//텍스트 파일을 읽어 출력한다.
+void printFile(const char path[30]);
+int CreateAllMonsters(MONSTER** monsters);
 
 
 void main()
 {
+	//창크기
+	system("mode con cols=91 lines=35");
 
+	srand(unsigned(time(NULL)));
 
 	//아이템 정보를 담은 일차원 배열
 	WEAPON* weapons = nullptr;
 	//처음에 모든 무기 만들어둠
 	int weaponsCount = CreateAllWeapons(&weapons);
+
+	MONSTER* monsters = nullptr;
+	int monsterCount = CreateAllMonsters(&monsters);
 
 	//플레이어 캐릭터
 	CHARACTER* character = nullptr;
@@ -76,180 +128,294 @@ void main()
 	//캐릭터 생성화면
 	while (true)
 	{
-		cout << "1.전사 2.마법사 3.도적 4.나가기" << endl;
+		//로고 출력
+		printFile("../GFX/logo2.txt");
+
+		cout << "0.로드 1.전사 2.마법사 3.도적 4.나가기" << endl;
 
 		int iSelect_character;
 		cin >> iSelect_character;
 
+		CHARACTER* character = nullptr;
+
 		//종료
 		if (iSelect_character == 4)
 		{
-			if (character != nullptr)
-			{
-				delete character->weapon;
-				delete character;
-			}
-			delete[] weapons;
-			cout << "게임을 종료합니다." << endl;
-
+			FinalizeGame(character, weapons);
 			return;
 		}
-
-		//캐릭터는 선택시 한번 생성
-		CHARACTER* character = CreateCharacter(iSelect_character);
+		//세이브 데이터로드
+		if (iSelect_character == 0)
+		{
+			character = Load();
+		}
+		else
+		{
+			//캐릭터는 선택시 한번 생성
+			character = CreateCharacter(iSelect_character);
+		}
 
 		//캐릭터의 행동선택 화면
 		while (true)
 		{
 
 			system("cls");
+			//캐릭터 정보 출력
 			PrintCharacter(character);
 
 			cout << "================================================" << endl;
 
-			cout << "1. 초급던전 2. 중급던전 3. 고급던전 4. 상점 5. 나가기" << endl;
+			cout << "0. 세이브 1. 초급던전 2. 중급던전 3. 고급던전 4. 상점 5. 나가기" << endl;
 
+			//어느 던전을 갈 것인가?
 			int iSelect_dungeon;
 			cin >> iSelect_dungeon;
 
-			if (iSelect_dungeon == 5)
+
+			if (iSelect_dungeon == 0)
 			{
-				cout << "게임을 종료합니다." << endl;
-				if (character != nullptr)
-				{
-					delete character->weapon;
-					delete character;
-				}
-				delete[] weapons;
+				Save(character);
+			}
+			else if (iSelect_dungeon == 5)
+			{
+				FinalizeGame(character, weapons);
 
 				return;
 			}
-
 			//던전진입
-			if (iSelect_dungeon <= 3)
+			else if (iSelect_dungeon <= 3)
 			{
-				//몬스터는 던전에 들어갈때 한번 생성
-				MONSTER* monster = CreateMonster(iSelect_dungeon);
-				//던전진입 화면
-				while (true)
-				{
-
-
-					system("cls");
-					PrintCharacter(character);
-					cout << "================================================" << endl;
-					PrintMonster(monster);
-					cout << "================================================" << endl;
-					cout << "1. 공격 2. 도망" << endl;
-
-					int iSelect_Behavior;
-					cin >> iSelect_Behavior;
-
-					//도망
-					if (iSelect_Behavior == 2)
-					{
-						delete monster;
-						system("cls");
-						break;
-					}
-					//공격
-					if (iSelect_Behavior == 1)
-					{
-						monster->currHealth -= character->attack;
-						character->currHealth -= monster->attack;
-
-
-						if (monster->currHealth <= 0 && character->currHealth <= 0)
-						{
-							cout << "사냥에 성공했지만 플레이어도 죽었습니다!" << endl;
-							character->currExp += monster->exp;
-							OnGetExp(character);
-							delete monster;
-							monster = nullptr;
-							delete character;
-							character = nullptr;
-							//캐릭터 리스폰
-							character = CreateCharacter(iSelect_character);
-							system("pause");
-							break;
-
-						}
-						else
-						{
-							if (monster->currHealth <= 0)
-							{
-								cout << "사냥에 성공했습니다!" << '\n' << monster->gold << " 골드를 얻었습니다." << endl;
-								character->currExp += monster->exp;
-								character->gold += monster->gold;
-								OnGetExp(character);
-								delete monster;
-								monster = nullptr;
-								system("pause");
-								break;
-							}
-							if (character->currHealth <= 0)
-							{
-								cout << "플레이어 사망!" << endl;
-								delete character;
-								character = nullptr;
-								//캐릭터 리스폰
-								character = CreateCharacter(iSelect_character);
-								system("pause");
-								break;
-							}
-						}
-
-					}
-				}
+				EnterDungeon(&character, monsters, monsterCount, (eHabitat)iSelect_dungeon, iSelect_character);
 			}
-
 			//상점진입
-			if (iSelect_dungeon == 4)
+			else if (iSelect_dungeon == 4)
 			{
-				while (true)
-				{
-					system("cls");
+				EnterMarket(character, weapons, weaponsCount);
 
-					cout << "상점에 어서오세요!" << endl;
-					cout << "잔액: " << character->gold << endl;
-
-					cout << '\n' << "0. 나가기" << endl;
-
-					for (int i = 0; i < weaponsCount; ++i)
-					{
-						printWeaponInfo(weapons[i]);
-					}
-
-					
-					int itemSelect = 0;
-					cin >> itemSelect;
-
-					WEAPON* weapon = CreateWeapon(weapons, weaponsCount, itemSelect);
-
-
-					if (character->gold >= weapon->price)
-					{
-						cout << weapon->name << "을(를) 구입하였습니다!" << endl;
-						character->weapon = weapon;
-						character->attack += character->weapon->attack;
-						character->gold -= weapon->price;
-					}
-					else
-						cout << "돈이 부족합니다!" << endl;
-
-					system("pause");
-				}
 			}
+			else
+				cout << "잘못된 입력입니다" << endl;
 
 
 		}
 	}
 
-	
+
 
 }
 
-WEAPON* CreateWeapon(WEAPON weapons[], int length, int id)
+void eOccupationToString(eOccupation occupation, char result[16])
+{
+	switch (occupation)
+	{
+	case WARRIOR:
+		strcpy_s(result, 16, "warrior");
+		break;
+	case WIZARD:
+		strcpy_s(result, 16, "wizard");
+		break;
+	case THIEF:
+		strcpy_s(result, 16, "thief");
+		break;
+	default:
+		cout << "없는 직업입니다." << endl;
+		break;
+	}
+
+}
+
+void EnterDungeon(CHARACTER** character, MONSTER monsters[], int monsterCnt, eHabitat habitat, int characterSelection)
+{
+	MONSTER* monster = CreateMonster(monsters, monsterCnt, habitat);
+
+	while (true)
+	{
+
+		system("cls");
+		PrintCharacter(*character);
+		cout << "================================================" << endl;
+		PrintMonster(monster);
+		cout << "================================================" << endl;
+		cout << "1. 공격 2. 도망" << endl;
+
+		int iSelect_Behavior;
+		cin >> iSelect_Behavior;
+
+		//도망
+		if (iSelect_Behavior == 2)
+		{
+			delete monster;
+			break;
+		}
+		//공격
+		if (iSelect_Behavior == 1)
+		{
+			monster->currHealth -= (*character)->attack;
+			(*character)->currHealth -= monster->attack;
+
+
+			if (monster->currHealth <= 0 && (*character)->currHealth <= 0)
+			{
+				cout << "사냥에 성공했지만 플레이어도 죽었습니다!" << endl;
+				(*character)->currExp += monster->exp;
+				OnGetExp(*character);
+				delete monster;
+				monster = nullptr;
+				OnCharacterDie(*character);
+				//캐릭터 리스폰
+				*character = CreateCharacter(characterSelection);
+				system("pause");
+				break;
+
+			}
+			else
+			{
+				if (monster->currHealth <= 0)
+				{
+					cout << "사냥에 성공했습니다!" << '\n' << monster->gold << " 골드를 얻었습니다." << endl;
+					(*character)->currExp += monster->exp;
+					(*character)->gold += monster->gold;
+					OnGetExp(*character);
+
+					delete monster;
+					monster = nullptr;
+
+					system("pause");
+					break;
+				}
+				if ((*character)->currHealth <= 0)
+				{
+					cout << "플레이어 사망!" << endl;
+
+					OnCharacterDie(*character);
+					//캐릭터 리스폰
+					*character = CreateCharacter(characterSelection);
+					system("pause");
+					break;
+				}
+			}
+
+		}
+	}
+}
+void EnterMarket(CHARACTER* character, WEAPON* weapons, int weaponsCount)
+{
+	while (true)
+	{
+		system("cls");
+
+		cout << "상점에 어서오세요!" << endl;
+		cout << "잔액: " << character->gold << endl;
+
+		cout << '\n' << "0. 나가기" << endl;
+
+		for (int i = 0; i < weaponsCount; ++i)
+		{
+			printWeaponInfo(weapons[i]);
+		}
+
+
+		int itemSelect = 0;
+		cin >> itemSelect;
+
+		if (itemSelect == 0)
+		{
+			break;
+		}
+		if (itemSelect <0 || itemSelect > weaponsCount)
+		{
+			cout << "잘못된 입력입니다" << endl;
+			system("pause");
+
+		}
+		//잘못된 입력이 아니면
+		else
+		{
+			WEAPON weaponToBuy = weapons[itemSelect - 1];
+			if (character->occupation != weaponToBuy.occupation)
+			{
+				cout << "착용할 수 없는 클래스의 무기입니다!" << endl;
+				system("pause");
+				continue;
+
+			}
+
+
+			if (character->gold >= weapons[itemSelect - 1].price)
+			{
+				WEAPON* weapon = CreateWeapon(weapons, itemSelect);
+				cout << weapon->name << "을(를) 구입하였습니다!" << endl;
+
+				delete character->weapon;
+
+				character->weapon = weapon;
+				character->attack += character->weapon->attack;
+				character->gold -= weapon->price;
+			}
+			else
+				cout << "돈이 부족합니다!" << endl;
+
+			system("pause");
+		}
+
+
+	}
+}
+
+void Save(CHARACTER* character)
+{
+	FILE* fp;
+	//파일 스트림 생성
+	errno_t err = fopen_s(&fp, "../Save/save1.txt", "wb");
+
+	if (0 == err)
+	{
+		//캐릭터 정보 저장
+		fwrite(character, sizeof(CHARACTER), 1, fp);
+		//파일 포인터 이동
+		//fseek(fp, sizeof(CHARACTER), SEEK_SET);
+		//무기정보 저장
+		fwrite(character->weapon, sizeof(WEAPON), 1, fp);
+		fclose(fp);
+		cout << "세이브성공!" << endl;
+		system("pause");
+	}
+	else
+		cout << "세이브 실패! 파일을 저장할 수 없습니다." << endl;
+}
+
+
+CHARACTER* Load()
+{
+	WEAPON* weapon = new WEAPON;
+	*weapon = {};
+	CHARACTER* character = new CHARACTER;
+	*character = {};
+	FILE* fp;
+	errno_t err = fopen_s(&fp, "../Save/save1.txt", "rb");
+	if (0 == err)
+	{
+		//캐릭터 정보 읽어오기
+		fread(character, sizeof(CHARACTER), 1, fp);
+		//파일 포인터 이동
+		//fseek(fp, sizeof(CHARACTER), SEEK_SET);
+		//무기정보 가져오기
+		fread(weapon, sizeof(WEAPON), 1, fp);
+		fclose(fp);
+		//캐릭터 무기 설정하기
+		character->weapon = weapon;
+		cout << "로드 성공!" << endl;
+		system("pause");
+		return character;
+
+	}
+	else
+		cout << "로드 실패! 파일을 가져올 수 없습니다." << endl;
+
+	return nullptr;
+}
+
+WEAPON* CreateWeapon(WEAPON weapons[], int id)
 {
 	WEAPON* weapon = new WEAPON;
 	memcpy(weapon, &(weapons[id - 1]), sizeof(WEAPON));
@@ -264,7 +430,7 @@ int CreateAllWeapons(WEAPON** weapons)
 	char(*weaponInfos)[1000] = nullptr;
 
 	//무기정보를 동적으로 할당받는다.
-	int itemCount = GetWeaponInfo(&weaponInfos);
+	int itemCount = GetInfo(&weaponInfos, "../Data/weapon.txt");
 
 	*weapons = new WEAPON[itemCount];
 
@@ -312,11 +478,79 @@ int CreateAllWeapons(WEAPON** weapons)
 		(*weapons)[i].attack = StringToInt(word[2]);
 		strcpy_s((*weapons)[i].description, 800, word[3]);
 		(*weapons)[i].price = StringToInt(word[4]);
-		strcpy_s((*weapons)[i].occupation, 16, word[5]);
+		(*weapons)[i].occupation = (eOccupation)StringToInt(word[5]);
 	}
 
 	delete[] weaponInfos;
 	weaponInfos = nullptr;
+
+	return itemCount;
+}
+
+int CreateAllMonsters(MONSTER** monsters)
+{
+
+	//무기에 대한 정보를 받을 이차원배열 포인터를 준비한다.
+	char(*monsterInfos)[1000] = nullptr;
+
+	//무기정보를 동적으로 할당받는다.
+	int itemCount = GetInfo(&monsterInfos, "../Data/monster.txt");
+	*monsters = new MONSTER[itemCount];
+
+
+	//쉼표로 끊으면서 무기 구조체에 대한 정보 셋팅
+	for (int i = 0; i < itemCount; ++i)
+	{
+		//word의 행,열
+		int col = 0, row = 0;
+		//하나의 무기 구조체에 대한 정보.
+		//description 항목때문에 모든 항목을 800개의 방으로 잡았다. 비효율적임. 개선 필요
+		char word[9][800] = {};
+
+		int len = strlen(monsterInfos[i]);
+
+		//쉼표단위로 파싱하기
+		for (int j = 0; j < len; ++j)
+		{
+			//word의 경계값을 넘어가면 무시
+			if (col > 8 || row > 799)
+			{
+				continue;
+			}
+			//쉼표면 word의 다음 행을 채운다.
+			if (',' == monsterInfos[i][j])
+			{
+				++col;
+				row = 0;
+			}
+			//개행문자면 빠져나간다.
+			else if ('\n' == monsterInfos[i][j])
+			{
+				break;
+			}
+			//이 모든게 아니면 데이터를 word 에 넣는다.
+			else
+			{
+				word[col][row] = monsterInfos[i][j];
+				++row;
+			}
+		}
+
+		(*monsters)[i].id = StringToInt(word[0]);
+		strcpy_s((*monsters)[i].name, 16, word[1]);
+		strcpy_s((*monsters)[i].GFX_PATH, 30, word[2]);
+		cout << (*monsters)[i].GFX_PATH << endl;
+		(*monsters)[i].attack = StringToInt(word[3]);
+		(*monsters)[i].maxHealth = StringToInt(word[4]);
+		(*monsters)[i].currHealth = StringToInt(word[5]);
+		(*monsters)[i].exp = StringToInt(word[6]);
+		(*monsters)[i].gold = StringToInt(word[7]);
+		(*monsters)[i].habitat = (eHabitat)StringToInt(word[8]);
+		//PrintMonster(monsters[i]);
+	}
+
+	delete[] monsterInfos;
+	monsterInfos = nullptr;
 
 	return itemCount;
 }
@@ -342,14 +576,14 @@ int StringToInt(const char arr[])
 	return result;
 }
 
-int GetWeaponInfo(char(**items)[1000])
+int GetInfo(char(**items)[1000], char path[30])
 {
 	//아이템 목록에서 아이템의 수
 	int itemCount = 0;
 
 	FILE* fp = nullptr;
 
-	errno_t err = fopen_s(&fp, "../weapon.txt", "rt");
+	errno_t err = fopen_s(&fp, path, "rt");
 	if (0 == err)
 	{
 		//아이템 인덱스
@@ -366,6 +600,9 @@ int GetWeaponInfo(char(**items)[1000])
 
 			//문자를 하나하나 가져옴
 			c = getc(fp);
+
+			if (EOF == c)
+				continue;
 
 			//주석 무시
 			if ('*' == c)
@@ -401,7 +638,6 @@ int GetWeaponInfo(char(**items)[1000])
 				{
 					c = getc(fp);
 				}
-				//cout << "2"<< *items << endl;
 				infoStart = true;
 				continue;
 			}
@@ -438,17 +674,19 @@ int GetWeaponInfo(char(**items)[1000])
 
 void printWeaponInfo(const WEAPON weapon)
 {
-	cout << '\n' << "==========================================" << '\n\n';
-	cout << weapon.id << '. ' << weapon.name << '\n';
+	cout << '\n' << "==========================================" << endl;
+	cout << weapon.id << ". " << weapon.name << '\n';
 	cout << "공격 : " << weapon.attack << '\n';
 	cout << weapon.description << '\n';
 	cout << "가격 : " << weapon.price << '\n';
-	cout << "직업 : " << weapon.occupation << '\n';
+	char occupation[16] = "";
+	eOccupationToString(weapon.occupation, occupation);
+	cout << "직업 : " << occupation << '\n';
 }
 
 void printWeaponInfo(const WEAPON* weapon)
 {
-	cout << '\n' << "==========================================" << '\n\n';
+	cout << '\n' << "==========================================" << endl;
 	cout << weapon->id << '. ' << weapon->name << '\n';
 	cout << "공격 : " << weapon->attack << '\n';
 	cout << weapon->description << '\n';
@@ -480,9 +718,17 @@ void LevelUp(CHARACTER* character)
 
 void PrintMonster(const MONSTER* const monster)
 {
-	cout << "이름: " << monster->name << endl;
-	cout << "공격력: " << monster->attack << endl;
-	cout << "체력: " << monster->currHealth << " / " << monster->maxHealth << endl;
+	if (monster != nullptr)
+	{
+		if (strcmp(monster->GFX_PATH, "") != 0)
+			printFile(monster->GFX_PATH);
+		cout << '\n';
+		cout << "이름: " << monster->name << endl;
+		cout << "공격력: " << monster->attack << endl;
+		cout << "체력: " << monster->currHealth << " / " << monster->maxHealth << endl;
+		
+	}
+	
 }
 
 void PrintCharacter(const CHARACTER* const character)
@@ -498,45 +744,46 @@ void PrintCharacter(const CHARACTER* const character)
 }
 
 
-MONSTER* CreateMonster(int selection)
+MONSTER* CreateMonster(MONSTER monsters[], int id)
 {
-	MONSTER* monster = {};
+	MONSTER* monster = new MONSTER;
+	memcpy(monster, &(monsters[id - 1]), sizeof(MONSTER));
+	return monster;
 
-	switch (selection)
+}
+
+MONSTER* CreateMonster(MONSTER monsters[], int length, eHabitat habitat)
+{	
+
+	//같은 서식지에 사는 몬스터들의 id. 최대 length(모든 몬스터의 수)만큼 있다.
+	int* family = new int[length];
+	*family = {};
+
+	//family의 인덱스이자 +1은 family의 길이
+	int index = 0;
+	for (int i =0; i < length; ++i)
 	{
-	case 1:
-		monster = new MONSTER;
-		strcpy_s(monster->name, "슬라임");
-		monster->attack = 5;
-		monster->maxHealth = 30;
-		monster->currHealth = 30;
-		monster->exp = 10;
-		monster->gold = 10;
-		break;
-	case 2:
-		monster = new MONSTER;
-		strcpy_s(monster->name, "오우거");
-		monster->attack = 15;
-		monster->maxHealth = 60;
-		monster->currHealth = 60;
-		monster->exp = 30;
-		monster->gold = 30;
-		break;
-	case 3:
-		monster = new MONSTER;
-		strcpy_s(monster->name, "골렘");
-		monster->attack = 30;
-		monster->maxHealth = 90;
-		monster->currHealth = 90;
-		monster->exp = 60;
-		monster->gold = 60;
-		break;
-	default:
-		cout << "잘못된 입력입니다." << endl;
+		if (monsters[i].habitat == habitat)
+		{
+			family[index] = monsters[i].id;
+			++index;
+		}
 	}
 
-	return monster;
+	while (*family != 0)
+	{
+		int monsterToSpawn = (rand() % (index + 1)) + 1;
+
+		delete[] family;
+
+		return CreateMonster(monsters, monsterToSpawn);
+	}
+
+	return nullptr;
+
+
 }
+
 
 CHARACTER* CreateCharacter(int selection)
 {
@@ -551,6 +798,7 @@ CHARACTER* CreateCharacter(int selection)
 		character->attack = 10;
 		character->maxHealth = 200;
 		character->maxExp = 50;
+		character->occupation = WARRIOR;
 		break;
 	case 2:
 		character = new CHARACTER;
@@ -558,6 +806,7 @@ CHARACTER* CreateCharacter(int selection)
 		character->attack = 15;
 		character->maxHealth = 80;
 		character->maxExp = 50;
+		character->occupation = WIZARD;
 		break;
 	case 3:
 		character = new CHARACTER;
@@ -565,6 +814,7 @@ CHARACTER* CreateCharacter(int selection)
 		character->attack = 7;
 		character->maxHealth = 150;
 		character->maxExp = 50;
+		character->occupation = THIEF;
 		break;
 	default:
 		cout << "잘못된 입력입니다." << endl;
@@ -575,8 +825,34 @@ CHARACTER* CreateCharacter(int selection)
 	character->currExp = 0;
 	character->gold = 0;
 	character->level = 1;
-	character->weapon = {};
+	//무기의 빈껍데기 만들어서 넣기
+	character->weapon = new WEAPON;
+	*(character->weapon) = {};
 	strcpy_s(character->weapon->name, "미착용");
 
 	return character;
+}
+
+void printFile(const char path[30])
+{
+	FILE* fp;
+	errno_t err = fopen_s(&fp, path, "rt");
+
+	if (0 == err)
+	{
+		char ch = 0;
+		while (true)
+		{
+			int cnt = fread(&ch, sizeof(char), 1, fp);
+			if (1 > cnt)
+				break;
+			cout << ch;
+
+		}
+		fclose(fp);
+		cout << '\n';
+	}
+	else
+		cout << "파일을 열수 없습니다." << endl;
+
 }
