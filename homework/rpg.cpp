@@ -2,12 +2,16 @@
 #include <math.h>
 #include <Windows.h>
 #include <time.h>
+
+//텍스트파일에서 데이터를 읽어올 때 한 줄의 최대 문자 수
+#define CharPerLine 1000
+
 using namespace std;
 
 //플레이어 직업
 enum eOccupation { WARRIOR, WIZARD, THIEF };
 //몬스터의 서식지
-enum eHabitat { BIGINNER=1, INTERMEDIATE, INTENCE, HELL};
+enum eHabitat { BIGINNER = 1, INTERMEDIATE, INTENCE, HELL };
 
 typedef struct tagWeapon
 {
@@ -38,7 +42,7 @@ typedef struct tagChracter
 }CHARACTER;
 
 typedef struct tagMonster
-{	
+{
 	//1부터 시작
 	int id = 0;
 	char name[16];
@@ -50,6 +54,7 @@ typedef struct tagMonster
 	int gold;
 	//서식지
 	eHabitat habitat;
+	float spawnChance;
 
 }MONSTER;
 
@@ -65,13 +70,15 @@ void OnGetExp(CHARACTER* character);
 void printWeaponInfo(const WEAPON weapon);
 void printWeaponInfo(const WEAPON* weapon);
 //텍스트 파일을 읽고 함수 내부에서 이차원 배열에 동적으로 할당한다.(한줄 = 한 항목) 항목의 수를 반환한다.
-int GetInfo(char(**items)[1000], char path[30]);
+int GetInfo(char(**items)[CharPerLine], char path[30]);
 //텍스트파일의 모든 아이템을 생성한다. 아이템의 수를 리턴한다.
 int CreateAllWeapons(WEAPON** weapons);
 //아이템 아이디를 받아 하나의 아이템을 생성한다(동적할당). 모든 아이템을 가진 배열과 그 길이, 아이디를 인수로 받는다.
 WEAPON* CreateWeapon(WEAPON weapons[], int id);
 //문자열을 int로 파싱한다.
 int StringToInt(const char arr[]);
+//문자열을 float으로 파싱한다.
+float StringToFloat(const char arr[]);
 //플레이어가 죽었을때
 void OnCharacterDie(CHARACTER* character)
 {
@@ -427,7 +434,7 @@ int CreateAllWeapons(WEAPON** weapons)
 {
 
 	//무기에 대한 정보를 받을 이차원배열 포인터를 준비한다.
-	char(*weaponInfos)[1000] = nullptr;
+	char(*weaponInfos)[CharPerLine] = nullptr;
 
 	//무기정보를 동적으로 할당받는다.
 	int itemCount = GetInfo(&weaponInfos, "../Data/weapon.txt");
@@ -491,7 +498,7 @@ int CreateAllMonsters(MONSTER** monsters)
 {
 
 	//무기에 대한 정보를 받을 이차원배열 포인터를 준비한다.
-	char(*monsterInfos)[1000] = nullptr;
+	char(*monsterInfos)[CharPerLine] = nullptr;
 
 	//무기정보를 동적으로 할당받는다.
 	int itemCount = GetInfo(&monsterInfos, "../Data/monster.txt");
@@ -505,7 +512,7 @@ int CreateAllMonsters(MONSTER** monsters)
 		int col = 0, row = 0;
 		//하나의 무기 구조체에 대한 정보.
 		//description 항목때문에 모든 항목을 800개의 방으로 잡았다. 비효율적임. 개선 필요
-		char word[9][800] = {};
+		char word[10][800] = {};
 
 		int len = strlen(monsterInfos[i]);
 
@@ -513,7 +520,7 @@ int CreateAllMonsters(MONSTER** monsters)
 		for (int j = 0; j < len; ++j)
 		{
 			//word의 경계값을 넘어가면 무시
-			if (col > 8 || row > 799)
+			if (col > 9 || row > 799)
 			{
 				continue;
 			}
@@ -539,14 +546,15 @@ int CreateAllMonsters(MONSTER** monsters)
 		(*monsters)[i].id = StringToInt(word[0]);
 		strcpy_s((*monsters)[i].name, 16, word[1]);
 		strcpy_s((*monsters)[i].GFX_PATH, 30, word[2]);
-		cout << (*monsters)[i].GFX_PATH << endl;
 		(*monsters)[i].attack = StringToInt(word[3]);
 		(*monsters)[i].maxHealth = StringToInt(word[4]);
 		(*monsters)[i].currHealth = StringToInt(word[5]);
 		(*monsters)[i].exp = StringToInt(word[6]);
 		(*monsters)[i].gold = StringToInt(word[7]);
 		(*monsters)[i].habitat = (eHabitat)StringToInt(word[8]);
-		//PrintMonster(monsters[i]);
+		(*monsters)[i].spawnChance = StringToFloat(word[9]);
+		//PrintMonster(*(monsters)[i]);
+
 	}
 
 	delete[] monsterInfos;
@@ -576,7 +584,51 @@ int StringToInt(const char arr[])
 	return result;
 }
 
-int GetInfo(char(**items)[1000], char path[30])
+float StringToFloat(const char arr[])
+{
+	//문자열->숫자 파싱
+	float result = 0.0f;
+	int totalLen = strlen(arr);
+
+	//소수점 이상의 길이
+	int overZeroLen = 0;
+
+	for (int i = 0; i < totalLen; ++i)
+	{
+		if ('.' == arr[i])
+		{
+			break;
+		}
+		else
+			++overZeroLen;
+	}
+
+	int below = -1;
+	for (int i = 0; i < totalLen; ++i)
+	{
+		if (arr[i] == '.')
+		{
+			continue;
+		}
+		if (i < overZeroLen)
+		{
+			int tmp = arr[i] - '0';
+			result += (int)(tmp * (pow((double)10, (double)overZeroLen - i - 1)));
+		}
+		else
+		{
+			int tmp = arr[i] - '0';
+			result += (float)(tmp * pow((double)10, (double)below));
+			--below;
+		}
+
+	}
+
+
+	return result;
+}
+
+int GetInfo(char(**items)[CharPerLine], char path[30])
 {
 	//아이템 목록에서 아이템의 수
 	int itemCount = 0;
@@ -621,19 +673,10 @@ int GetInfo(char(**items)[1000], char path[30])
 			{
 				itemCount = c - '0';
 				//아이템 정보를 저장할 배열 동적생성
-				*items = new char[itemCount][1000];
+				*items = new char[itemCount][CharPerLine];
 
 				//널문자로 초기화
-				//for (int i = 0; i < itemCount; ++i)
-				//{
-				//	for (int j = 0; j < 1000; ++j)
-				//	{
-				//		(*items)[i][j] = '\0';
-				//	}
-				//}
-
-				//널문자로 초기화
-				memset(*items, '\0', (sizeof(char) * 1000) * itemCount);
+				memset(*items, '\0', (sizeof(char) * CharPerLine) * itemCount);
 				while ('\n' != c)
 				{
 					c = getc(fp);
@@ -726,9 +769,9 @@ void PrintMonster(const MONSTER* const monster)
 		cout << "이름: " << monster->name << endl;
 		cout << "공격력: " << monster->attack << endl;
 		cout << "체력: " << monster->currHealth << " / " << monster->maxHealth << endl;
-		
+
 	}
-	
+
 }
 
 void PrintCharacter(const CHARACTER* const character)
@@ -753,34 +796,83 @@ MONSTER* CreateMonster(MONSTER monsters[], int id)
 }
 
 MONSTER* CreateMonster(MONSTER monsters[], int length, eHabitat habitat)
-{	
+{
 
 	//같은 서식지에 사는 몬스터들의 id. 최대 length(모든 몬스터의 수)만큼 있다.
 	int* family = new int[length];
+	float* spawnChance = new float[length];
 	*family = {};
+	*spawnChance = {};
 
+	float chanceSum = 0;
 	//family의 인덱스이자 +1은 family의 길이
 	int index = 0;
-	for (int i =0; i < length; ++i)
+	for (int i = 0; i < length; ++i)
 	{
 		if (monsters[i].habitat == habitat)
 		{
 			family[index] = monsters[i].id;
+			spawnChance[index] = monsters[i].spawnChance;
+			chanceSum += spawnChance[index];
 			++index;
+			cout << "이 곳에 사는 몬스터 : " << monsters[i].name << endl;
+			cout << "단일 개체의 출현확률 : " << monsters[i].spawnChance << endl;
 		}
 	}
 
-	while (*family != 0)
+	cout << "모든 확률: " << chanceSum << endl;
+
+	//오름차순 정렬
+	for (int i = 0; i < index; ++i)
 	{
-		int monsterToSpawn = (rand() % (index + 1)) + 1;
-
-		delete[] family;
-
-		return CreateMonster(monsters, monsterToSpawn);
+		for (int j = 0; j < index - 1 - i; ++j)
+		{
+			if (spawnChance[j] > spawnChance[j + 1])
+			{
+				float tmp = spawnChance[j + 1];
+				spawnChance[j + 1] = spawnChance[j];
+				spawnChance[j] = tmp;
+				int tmp2 = family[j + 1];
+				family[j + 1] = family[j];
+				family[j] = tmp2;
+			}
+		}
 	}
 
-	return nullptr;
 
+	// 확률로 나타나기
+
+	//확률적으로 뽑은 숫자
+	int randomNum = (rand() % (int)chanceSum) + 1;
+	cout << "확률적으로 뽑은 숫자: " << randomNum << endl;
+	//누적확률
+	float sum = 0.0f;
+	int familyIndex = 0;
+	for (int i = 0; i < index; ++i)
+	{
+		sum += spawnChance[i];
+		if (sum >= randomNum)
+		{
+			familyIndex = i;
+			break;
+		}
+
+	}
+
+	//// index = 2
+	//// 0 1 2 3
+	//// 1 3
+	//// family[0] family[1] 0 ~ index-1의 범위에서 랜덤으로 뽑은 아이디
+	//int randomIndex = rand() % index;
+	////랜덤으로 고른 몬스터의 아이디
+	//int id = family[randomIndex];
+
+	int idToSpawn = family[familyIndex];
+	cout << "출현확률: " << (spawnChance[familyIndex]/chanceSum) * 100 << endl;
+	system("pause");
+	delete[] family;
+
+	return CreateMonster(monsters, idToSpawn);
 
 }
 
