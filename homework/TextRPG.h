@@ -138,3 +138,4 @@ void UsePotion(CHARACTER* character, int potionIndex);
 void ShowInventory(CHARACTER* character);
 int GetInventorySize(INVENTORY inventory);
 void ShowPotionBag(CHARACTER* character);
+void ShowWeaponBag(CHARACTER* character);

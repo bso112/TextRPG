@@ -31,7 +31,7 @@ void main()
 		//로고 출력
 		printFile("../GFX/logo.txt");
 
-		cout << "0.로드 1.전사 2.마법사 3.도적 4.나가기" << endl;
+		cout << "0.나가기 1.전사 2.마법사 3.도적 4.로드" << endl;
 
 		int characterToCreate;
 		cin >> characterToCreate;
@@ -39,13 +39,13 @@ void main()
 		CHARACTER* character = nullptr;
 
 		//종료
-		if (characterToCreate == 4)
+		if (characterToCreate == 0)
 		{
 			FinalizeGame(character, weapons, potions);
 			return;
 		}
 		//세이브 데이터로드
-		if (characterToCreate == 0)
+		if (characterToCreate == 4)
 		{
 			character = Load();
 			if (character == nullptr)
@@ -74,7 +74,7 @@ void main()
 
 			cout << "================================================" << endl;
 
-			cout << "0. 세이브 1. 초급던전 2. 중급던전 3. 고급던전 4. 대장간  5. 힐러집 6. 인벤토리 900. 나가기" << endl;
+			cout << "0. 나가기 1. 초급던전 2. 중급던전 3. 고급던전 4. 대장간  5. 힐러집 6. 인벤토리 900. 세이브" << endl;
 
 			//어디를 갈 것인가?
 			int destiantion;
@@ -83,13 +83,12 @@ void main()
 
 			if (destiantion == 0)
 			{
-				Save(character);
+				FinalizeGame(character, weapons, potions);
+				return;
 			}
 			else if (destiantion == 900)
 			{
-				FinalizeGame(character, weapons, potions);
-
-				return;
+				Save(character);
 			}
 			//던전진입
 			else if (destiantion > 0 && destiantion <= 3)
@@ -149,15 +148,17 @@ void EnterHealersHouse(POTION* potions, int potionCount, CHARACTER* character)
 	{
 		system("cls");
 		cout << "좋은 포션 보고가세요!" << endl;
-		cout << "잔액: " << character->gold << endl;
-		cout << '\n' << "0. 나가기" << endl;
+		cout << "\n\n\n";
+
 		for (int i = 0; i < potionCount; ++i)
 		{
 			cout << "<" << i + 1 << "번>" << endl;
 			printPotionInfo(potions[i]);
-			cout << "\n\n";
 		}
 
+		cout << "잔액: " << character->gold << endl;
+		cout << "\n\n";
+		cout << "0. 나가기" << endl;
 		int itemSelect = 0;
 		cin >> itemSelect;
 
@@ -185,7 +186,7 @@ void EnterHealersHouse(POTION* potions, int potionCount, CHARACTER* character)
 			}
 			else
 				cout << "돈이 부족합니다!" << endl;
-			
+
 			system("pause");
 		}
 
@@ -274,16 +275,18 @@ void EnterForge(CHARACTER* character, WEAPON* weapons, int weaponsCount)
 		system("cls");
 
 		cout << "최고의 무기가 모여있습니다." << endl;
-		cout << "잔액: " << character->gold << endl;
-
-		cout << '\n' << "0. 나가기" << endl;
+		cout << "\n\n\n";
+		
 
 		for (int i = 0; i < weaponsCount; ++i)
 		{
+			cout << "<" << i + 1 << "번>" << endl;
 			printWeaponInfo(weapons[i]);
 		}
 
-
+		cout << "잔액: " << character->gold << endl;
+		cout << "\n\n";
+		cout << "0. 나가기" << "\n\n\n";
 		int itemSelect = 0;
 		cin >> itemSelect;
 
@@ -315,10 +318,17 @@ void EnterForge(CHARACTER* character, WEAPON* weapons, int weaponsCount)
 				WEAPON* weapon = CreateWeapon(weapons, itemSelect);
 				cout << weapon->name << "을(를) 구입하였습니다!" << endl;
 
-				delete character->weapon;
-
-				character->weapon = weapon;
-				character->attack += character->weapon->attack;
+				//플레이어가 무기를 장착하지 않았으면 바로 장착한다.
+				if (character->weapon->id == 0)
+				{
+					character->weapon = weapon;
+					character->attack += character->weapon->attack;
+				}
+				else
+				{
+					//아니면 인벤토리에 넣는다.
+					character->inventory->weapons.push_back(character->weapon);
+				}
 				character->gold -= weapon->price;
 			}
 			else
@@ -330,6 +340,7 @@ void EnterForge(CHARACTER* character, WEAPON* weapons, int weaponsCount)
 
 	}
 }
+
 
 void Save(CHARACTER* character)
 {
@@ -418,7 +429,7 @@ int CreateAllWeapons(WEAPON** weapons)
 		for (int j = 0; j < len; ++j)
 		{
 			//word의 경계값을 넘어가면 무시
-			if (col > 6 || row > DESCRIPTION_LENGTH-1)
+			if (col > 6 || row > DESCRIPTION_LENGTH - 1)
 			{
 				continue;
 			}
@@ -482,7 +493,7 @@ int CreateAllMonsters(MONSTER** monsters)
 		for (int j = 0; j < len; ++j)
 		{
 			//word의 경계값을 넘어가면 무시
-			if (col > 9 || row > DESCRIPTION_LENGTH-1)
+			if (col > 9 || row > DESCRIPTION_LENGTH - 1)
 			{
 				continue;
 			}
@@ -743,39 +754,44 @@ int GetInfo(char(**items)[CHAR_PER_LINE], char path[30])
 
 void printWeaponInfo(const WEAPON weapon)
 {
-	cout << '\n' << "==========================================" << endl;
+	cout << "\n\n";
 	printFile(weapon.GFX_PATH);
 	cout << '\n';
-	cout << weapon.id << ". " << weapon.name << '\n';
+	cout << weapon.name << '\n';
 	cout << "공격 : " << weapon.attack << '\n';
 	cout << weapon.description << '\n';
 	cout << "가격 : " << weapon.price << '\n';
 	char occupation[16] = "";
 	eOccupationToString(weapon.occupation, occupation);
 	cout << "직업 : " << occupation << '\n';
+	cout << '\n' << "==========================================================================================" << endl;
 }
 
 void printWeaponInfo(const WEAPON* weapon)
 {
-	cout << '\n' << "==========================================" << endl;
-	cout << weapon->id << '. ' << weapon->name << '\n';
+	cout << "\n\n";
+	cout << weapon->name << '\n';
 	printFile(weapon->GFX_PATH);
 	cout << '\n';
 	cout << "공격 : " << weapon->attack << '\n';
 	cout << weapon->description << '\n';
 	cout << "가격 : " << weapon->price << '\n';
+	char occupation[16] = "";
+	eOccupationToString(weapon->occupation, occupation);
 	cout << "직업 : " << weapon->occupation << '\n';
+	cout << "==========================================================================================" << endl;
 }
 
 void printPotionInfo(const POTION potion)
 {
-	cout << "==========================================" << endl;
+	cout << "\n\n";
+	cout << potion.name << '\n';
 	printFile(potion.GFX_PATH);
 	cout << '\n';
-	cout << potion.name << '\n';
 	cout << "회복량 : " << potion.healAmount << '\n';
 	cout << potion.description << '\n';
 	cout << "가격 : " << potion.price << '\n';
+	cout << "==========================================================================================" << endl;
 }
 
 void OnGetExp(CHARACTER* character)
@@ -1004,7 +1020,7 @@ void UsePotion(CHARACTER* character, int potionIndex)
 	POTION* potion = character->inventory->potions[potionIndex];
 	character->currHealth += potion->healAmount;
 	delete potion;
-	character->inventory->potions.erase(character->inventory->potions.begin()+potionIndex);
+	character->inventory->potions.erase(character->inventory->potions.begin() + potionIndex);
 }
 
 void ShowInventory(CHARACTER* character)
@@ -1039,8 +1055,10 @@ void ShowInventory(CHARACTER* character)
 				break;
 			case 1:
 				ShowPotionBag(character);
+				break;
 			case 2:
-				cout << "미구현" << endl;
+				ShowWeaponBag(character);
+				break;
 			default:
 				break;
 			}
@@ -1049,19 +1067,66 @@ void ShowInventory(CHARACTER* character)
 		}
 	}
 
-	
-	
-} 
+
+
+}
+
+void ShowWeaponBag(CHARACTER* character)
+{
+	while (true)
+	{
+
+		system("cls");
+
+		cout << "무기 인벤토리" << "\n\n";
+
+
+		int weaponCnt = character->inventory->weapons.size();
+		for (int i = 0; i < weaponCnt; ++i)
+		{
+			cout << "<" << i + 1 << "번>" << endl;
+			printWeaponInfo(character->inventory->weapons[i]);
+			cout << "\n\n";
+		}
+
+
+		cout << "0. 나가기 아이템번호. 사용" << endl;
+		unsigned int selection;
+		cin >> selection;
+
+		//selection 1 2 3 4 5
+		//potion    0 1 2 3 4
+
+		if (0 == selection)
+		{
+			return;
+		}
+		else if (selection <= character->inventory->weapons.size())
+		{
+			cout << character->inventory->weapons[selection - 1]->name << "을 장착했다!" << endl;
+			system("pause");
+
+			//무기를 장착한다.
+			character->weapon = character->inventory->weapons[selection - 1];
+			//장착한 무기는 인벤토리에서 삭제한다.
+			character->inventory->weapons.erase(character->inventory->weapons.begin() + (selection - 1));
+			//플레이어가 무기를 끼고 있었다면 인벤토리에 넣는다.
+			if (character->weapon != 0)
+				character->inventory->weapons.push_back(character->weapon);
+
+		}
+	}
+}
 
 void ShowPotionBag(CHARACTER* character)
 {
 	while (true)
-	{	
+	{
 
 		system("cls");
 
 		cout << "포션 인벤토리" << "\n\n";
-
+		
 		int potionCnt = character->inventory->potions.size();
 		for (int i = 0; i < potionCnt; ++i)
 		{
@@ -1072,7 +1137,7 @@ void ShowPotionBag(CHARACTER* character)
 
 
 		cout << "0. 나가기 아이템번호. 사용" << endl;
-		int selection;
+		unsigned int selection;
 		cin >> selection;
 
 		//selection 1 2 3 4 5
@@ -1086,7 +1151,7 @@ void ShowPotionBag(CHARACTER* character)
 		{
 			cout << character->inventory->potions[selection - 1]->name << "을 사용했다!" << endl;
 			system("pause");
-			UsePotion(character, selection-1);
+			UsePotion(character, selection - 1);
 		}
 	}
 }
@@ -1112,7 +1177,7 @@ void FinalizeGame(CHARACTER* character, WEAPON* weapons, POTION* potions)
 	if (character != nullptr)
 	{
 		delete character->weapon;
-		
+
 		int potionSize = character->inventory->potions.size();
 		for (int i = 0; i < potionSize; ++i)
 		{
@@ -1133,6 +1198,6 @@ void FinalizeGame(CHARACTER* character, WEAPON* weapons, POTION* potions)
 }
 int GetInventorySize(INVENTORY inventory)
 {
-	int size = inventory.potions.size();
+	int size = inventory.potions.size() + inventory.weapons.size();
 	return size;
 }
