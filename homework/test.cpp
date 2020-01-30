@@ -1,79 +1,51 @@
 ﻿#include <iostream>
-
+#include <vector>
 using namespace std;
 
-
-
-int StringToInt(const char arr[])
+typedef struct tagPotion
 {
-	//문자열->숫자 파싱
-	int result = 0;
-	int len = strlen(arr);
+	int id = 0;
+}POTION;
 
-	for (int i = 0; i < len; ++i)
-	{
-		int tmp = arr[i] - '0';
-		result += (int)(tmp * (pow((double)10, (double)len - i - 1)));
-	}
-
-	// 1  1 
-	// 2  10
-	// 3  100
-	// 10의 0승은 1 
-	//      1승은 10 ...
-
-	return result;
-}
-
-// 52.6
-float StringToFloat(const char arr[])
+typedef struct tagInventory
 {
-	//문자열->숫자 파싱
-	float result = 0.0f;
-	int totalLen = strlen(arr);
+	vector<POTION*> potions;
 
-	//소수점 이상의 길이
-	int overZeroLen = 0;
+}INVENTORY;
 
-	for (int i = 0; i < totalLen; ++i)
-	{
-		if ('.' == arr[i])
-		{
-			break;
-		}
-		else
-			++overZeroLen;
-	}
+typedef struct tagChracter
+{
 
-	int below = -1;
-	for (int i = 0; i < totalLen; ++i)
-	{
-		if (arr[i] == '.')
-		{	
-			continue;
-		}
-		if (i < overZeroLen)
-		{
-			int tmp = arr[i] - '0';
-			result += (int)(tmp * (pow((double)10, (double)overZeroLen - i - 1)));
-		}
-		else
-		{
-			int tmp = arr[i] - '0';
-			result += tmp * pow((double)10, (double)below);
-			--below;
-		}
-		
-	}
+	INVENTORY *inventory;
+
+}CHARACTER;
 
 
-	return result;
+CHARACTER* MakeCharacter()
+{
+	CHARACTER* c = new CHARACTER;
+	c->inventory = new INVENTORY;
+	return c;
 }
 
 void main()
 {
 	
-	cout << StringToFloat("50") << endl;
+	CHARACTER* c = MakeCharacter();
+
+	POTION* p = new POTION;
+	c->inventory->potions.push_back(p);
+
+	int size = c->inventory->potions.size();
+	cout << size << endl;
+	for (int i = 0; i < size; ++i)
+	{
+		delete c->inventory->potions[i];
+	}
+	delete c->inventory;
 }
+
+
+
 
 

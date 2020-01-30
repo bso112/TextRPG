@@ -1,0 +1,85 @@
+
+//파일에서 한항목 불러오기 구현하려다 말았음
+//
+//
+//char* GetInfoById(int id, char buffer[], char path[30])
+//{
+//
+//	//아이템 목록에서 아이템의 수
+//	int itemCount = 0;
+//
+//	FILE* fp = nullptr;
+//
+//	errno_t err = fopen_s(&fp, path, "rt");
+//	if (0 == err)
+//	{
+//		//아이템 인덱스
+//		int index = 0;
+//		int c = 0;
+//		//정보를 읽어도 되나?
+//		bool infoStart = false;
+//
+//
+//		//파일이 끝날때까지 문자를 받아옴
+//		while (EOF != c)
+//		{
+//
+//			//문자를 하나하나 가져옴
+//			c = getc(fp);
+//
+//			if (EOF == c)
+//				continue;
+//			//주석 무시
+//			if ('*' == c)
+//			{
+//				//개행할때까지 읽는다.
+//				while ('\n' != c)
+//				{
+//					c = getc(fp);
+//				}
+//				//이제 다음 줄이지만 c는 여전히 '\n'이니 컨티뉴
+//				continue;
+//			}
+//
+//			//첫행이면 개행할때까지 무시
+//			if (!infoStart)
+//			{
+//				while ('\n' != c)
+//				{
+//					c = getc(fp);
+//				}
+//				infoStart = true;
+//				continue;
+//			}
+//
+//			//인자로 받은 id에 해당하는 항목만 읽음. 첫번째 쉼표 나올때까지만.
+//			if (',' != c)
+//			{
+//				buffer[index] = c;
+//				++index;
+//			}
+//			else
+//			{
+//				//한 항목에 대해 확인한 아이디
+//				int tmpId = StringToInt(buffer);
+//				if (tmpId == id)
+//				{
+//					
+//				}
+//
+//				
+//			}
+//			
+//
+//		}
+//
+//		fclose(fp);
+//
+//	}
+//	else
+//		cout << "파일 개방 실패!" << endl;
+//
+//
+//
+//
+//}

@@ -1,7 +1,7 @@
 *스펠링 오타와 쉼표누락에 주의!
 *첫 줄은 항목의 수(항목을 갱신한 뒤 항목수도 변경해주는 것을 잊지말기!)
 *id, name[16], GFX_PATH[30], attack, maxHealth, currHealth, exp, gold, habitat(1부터), spawnChance
-*공백 넣지말기.
+*공백 넣지 말기!
 5
 1,slime,../GFX/slime.txt,5,30,30,10,11,1,50
 2,orgre,../GFX/orgre.txt,15,60,60,30,31,2,50

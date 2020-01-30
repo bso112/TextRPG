@@ -1,0 +1,5 @@
+*id, GFX_PATH[30], name[16], healAmount, description, price, ePotion
+* ePotion {HP, MP}
+2
+1,../GFX/lesserPotion.txt,lesser HP Potion,20,it can heal little Amount of HP,20,0
+2,../GFX/potion.txt,nomal HP Potion,50,it can heal HP,50,0
