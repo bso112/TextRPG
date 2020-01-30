@@ -41,7 +41,8 @@ void main()
 		//종료
 		if (characterToCreate == 0)
 		{
-			FinalizeGame(character, weapons, potions);
+			FinalizeGame(character, monsters, weapons, potions);
+			_CrtDumpMemoryLeaks(); // 메모리누수 체크
 			return;
 		}
 		//세이브 데이터로드
@@ -83,7 +84,8 @@ void main()
 
 			if (destiantion == 0)
 			{
-				FinalizeGame(character, weapons, potions);
+				FinalizeGame(character, monsters, weapons, potions);
+				_CrtDumpMemoryLeaks(); // 메모리누수 체크
 				return;
 			}
 			else if (destiantion == 900)
@@ -268,6 +270,7 @@ void EnterDungeon(CHARACTER** character, MONSTER monsters[], int monsterCnt, eHa
 		}
 	}
 }
+
 void EnterForge(CHARACTER* character, WEAPON* weapons, int weaponsCount)
 {
 	while (true)
@@ -276,7 +279,7 @@ void EnterForge(CHARACTER* character, WEAPON* weapons, int weaponsCount)
 
 		cout << "최고의 무기가 모여있습니다." << endl;
 		cout << "\n\n\n";
-		
+
 
 		for (int i = 0; i < weaponsCount; ++i)
 		{
@@ -286,15 +289,20 @@ void EnterForge(CHARACTER* character, WEAPON* weapons, int weaponsCount)
 
 		cout << "잔액: " << character->gold << endl;
 		cout << "\n\n";
-		cout << "0. 나가기" << "\n\n\n";
+		cout << "0. 나가기 항목번호. 구입하기 999. 강화하기" << '\n';
 		int itemSelect = 0;
 		cin >> itemSelect;
 
-		if (itemSelect == 0)
+		if (0 == itemSelect)
 		{
 			break;
 		}
-		if (itemSelect <0 || itemSelect > weaponsCount)
+		else if (999 == itemSelect)
+		{
+			EnhanceWeaponPage(character);
+
+		}
+		else if (itemSelect <0 || itemSelect > weaponsCount)
 		{
 			cout << "잘못된 입력입니다" << endl;
 			system("pause");
@@ -321,13 +329,15 @@ void EnterForge(CHARACTER* character, WEAPON* weapons, int weaponsCount)
 				//플레이어가 무기를 장착하지 않았으면 바로 장착한다.
 				if (character->weapon->id == 0)
 				{
+					//빈껍데기 제거
+					delete character->weapon;
 					character->weapon = weapon;
 					character->attack += character->weapon->attack;
 				}
 				else
 				{
 					//아니면 인벤토리에 넣는다.
-					character->inventory->weapons.push_back(character->weapon);
+					character->inventory->weapons.push_back(weapon);
 				}
 				character->gold -= weapon->price;
 			}
@@ -396,6 +406,13 @@ CHARACTER* Load()
 
 WEAPON* CreateWeapon(WEAPON weapons[], int id)
 {
+	//만약 id가 0이면 빈껍데기 만들기
+	if (0 == id)
+	{
+		WEAPON* weapon = new WEAPON;
+		*weapon = {};
+	}
+	//id에 해당하는 무기 리턴
 	WEAPON* weapon = new WEAPON;
 	memcpy(weapon, &(weapons[id - 1]), sizeof(WEAPON));
 	return weapon;
@@ -754,31 +771,44 @@ int GetInfo(char(**items)[CHAR_PER_LINE], char path[30])
 
 void printWeaponInfo(const WEAPON weapon)
 {
+	if (0 == weapon.id)
+	{
+		cout << "맨손" << endl;
+		return;
+	}
+
 	cout << "\n\n";
 	printFile(weapon.GFX_PATH);
 	cout << '\n';
 	cout << weapon.name << '\n';
-	cout << "공격 : " << weapon.attack << '\n';
+	cout << "공격: " << weapon.attack << '\n';
 	cout << weapon.description << '\n';
-	cout << "가격 : " << weapon.price << '\n';
+	cout << "가격: " << weapon.price << '\n';
 	char occupation[16] = "";
 	eOccupationToString(weapon.occupation, occupation);
-	cout << "직업 : " << occupation << '\n';
+	cout << "직업: " << occupation << '\n';
 	cout << '\n' << "==========================================================================================" << endl;
 }
 
 void printWeaponInfo(const WEAPON* weapon)
 {
+	if (0 == weapon->id)
+	{
+		cout << "맨손" << endl;
+		return;
+	}
+
 	cout << "\n\n";
 	cout << weapon->name << '\n';
 	printFile(weapon->GFX_PATH);
 	cout << '\n';
-	cout << "공격 : " << weapon->attack << '\n';
+	cout << "공격: " << weapon->attack << '\n';
+	cout << "강화레벨: " << weapon->level << '\n';
 	cout << weapon->description << '\n';
-	cout << "가격 : " << weapon->price << '\n';
+	cout << "가격: " << weapon->price << '\n';
 	char occupation[16] = "";
 	eOccupationToString(weapon->occupation, occupation);
-	cout << "직업 : " << weapon->occupation << '\n';
+	cout << "직업: " << weapon->occupation << '\n';
 	cout << "==========================================================================================" << endl;
 }
 
@@ -788,9 +818,9 @@ void printPotionInfo(const POTION potion)
 	cout << potion.name << '\n';
 	printFile(potion.GFX_PATH);
 	cout << '\n';
-	cout << "회복량 : " << potion.healAmount << '\n';
+	cout << "회복량: " << potion.healAmount << '\n';
 	cout << potion.description << '\n';
-	cout << "가격 : " << potion.price << '\n';
+	cout << "가격: " << potion.price << '\n';
 	cout << "==========================================================================================" << endl;
 }
 
@@ -804,14 +834,14 @@ void OnGetExp(CHARACTER* character)
 
 void LevelUp(CHARACTER* character)
 {
-	int weight = character->level / 3;
+	float weight = character->level / 3.f;
 	weight = weight < 1 ? weight = 1 : weight;
 
-	character->level += 1;
-	character->maxHealth += 20 * weight;
+	character->level += (int)1;
+	character->maxHealth += (int)(20 * weight);
 	character->currHealth = character->maxHealth;
-	character->attack += 5 * weight;
-	character->maxExp += 20 * weight;
+	character->attack += (int)(5 * weight);
+	character->maxExp += (int)(20 * weight);
 	character->currExp = 0;
 
 }
@@ -1017,6 +1047,12 @@ void printFile(const char path[30])
 //포션을 사용하고 할당해제한다. nullptr로 바꾼다.
 void UsePotion(CHARACTER* character, int potionIndex)
 {
+	if (character->currHealth >= character->maxHealth)
+	{
+		cout << "이미 체력이 꽉 차있습니다.";
+		return;
+	}
+
 	POTION* potion = character->inventory->potions[potionIndex];
 	character->currHealth += potion->healAmount;
 	delete potion;
@@ -1029,11 +1065,15 @@ void ShowInventory(CHARACTER* character)
 	{
 		system("cls");
 
+		cout << "<장착중> " << endl;
+		printWeaponInfo(character->weapon);
+		cout << "\n\n";
 
 		if (0 == GetInventorySize(*(character->inventory)))
 		{
 
 			cout << "인벤토리가 비었습니다!" << endl;
+
 			system("pause");
 			return;
 		}
@@ -1077,11 +1117,18 @@ void ShowWeaponBag(CHARACTER* character)
 	{
 
 		system("cls");
+	
+		cout << "<장착중> " << endl;
+		printWeaponInfo(character->weapon);
+		cout << "\n\n";
+
 
 		cout << "무기 인벤토리" << "\n\n";
 
 
 		int weaponCnt = character->inventory->weapons.size();
+
+
 		for (int i = 0; i < weaponCnt; ++i)
 		{
 			cout << "<" << i + 1 << "번>" << endl;
@@ -1090,29 +1137,48 @@ void ShowWeaponBag(CHARACTER* character)
 		}
 
 
-		cout << "0. 나가기 아이템번호. 사용" << endl;
+		cout << "0. 나가기 아이템번호. 사용 999.장착해제" << endl;
 		unsigned int selection;
 		cin >> selection;
-
-		//selection 1 2 3 4 5
-		//potion    0 1 2 3 4
-
+		
 		if (0 == selection)
 		{
 			return;
 		}
+		else if (999 == selection)
+		{
+			//현재 착용장비 인벤토리에 넣기
+			character->inventory->weapons.push_back(character->weapon);
+			//장착해제
+			character->weapon = new WEAPON;
+			*(character->weapon) = {};
+			strcpy_s(character->weapon->name, ITEM_NAME_LENGTH, "미착용");
+		}
+		//selection 1 2 3 4 5
+		//potion    0 1 2 3 4
+		//항목 번호를 제대로 입력했으면
 		else if (selection <= character->inventory->weapons.size())
 		{
 			cout << character->inventory->weapons[selection - 1]->name << "을 장착했다!" << endl;
 			system("pause");
 
+
+			//플레이어가 무기를 끼고 있었다면 인벤토리에 넣는다.
+			if (character->weapon->id != 0)
+				character->inventory->weapons.push_back(character->weapon);
+			//맨손이었으면 빈객체를 파괴한다.
+			else
+			{
+				delete character->weapon;
+				character->weapon = nullptr;
+			}
+
 			//무기를 장착한다.
 			character->weapon = character->inventory->weapons[selection - 1];
 			//장착한 무기는 인벤토리에서 삭제한다.
 			character->inventory->weapons.erase(character->inventory->weapons.begin() + (selection - 1));
-			//플레이어가 무기를 끼고 있었다면 인벤토리에 넣는다.
-			if (character->weapon != 0)
-				character->inventory->weapons.push_back(character->weapon);
+			
+			
 
 		}
 	}
@@ -1126,7 +1192,7 @@ void ShowPotionBag(CHARACTER* character)
 		system("cls");
 
 		cout << "포션 인벤토리" << "\n\n";
-		
+
 		int potionCnt = character->inventory->potions.size();
 		for (int i = 0; i < potionCnt; ++i)
 		{
@@ -1172,7 +1238,7 @@ void OnCharacterDie(CHARACTER* character)
 
 }
 
-void FinalizeGame(CHARACTER* character, WEAPON* weapons, POTION* potions)
+void FinalizeGame(CHARACTER* character, MONSTER* monsters, WEAPON* weapons, POTION* potions)
 {
 	if (character != nullptr)
 	{
@@ -1182,6 +1248,11 @@ void FinalizeGame(CHARACTER* character, WEAPON* weapons, POTION* potions)
 		for (int i = 0; i < potionSize; ++i)
 		{
 			delete character->inventory->potions[i];
+		}
+		int weaponSize = character->inventory->weapons.size();
+		for (int i = 0; i < weaponSize; ++i)
+		{
+			delete character->inventory->weapons[i];
 		}
 		delete character->inventory;
 		delete character;
@@ -1194,10 +1265,106 @@ void FinalizeGame(CHARACTER* character, WEAPON* weapons, POTION* potions)
 	{
 		delete[] potions;
 	}
+	if (monsters != nullptr)
+	{
+		delete[] monsters;
+	}
 	cout << "게임을 종료합니다." << endl;
 }
+
 int GetInventorySize(INVENTORY inventory)
 {
 	int size = inventory.potions.size() + inventory.weapons.size();
 	return size;
+}
+
+void EnhanceWeapon(WEAPON* weapon)
+{
+	//0~99까지의 실수 난수.
+	float random = (rand() / (float)RAND_MAX) * 99.f;
+
+	//레벨 1일때 기본 확률
+	float chance = BASE_ENHANCE_CHANCE;
+
+	//레벨이의 5.2배만큼 확률 하락
+	chance -= weapon->level * 5.2f;
+
+	//cout << "강화확률 : " << chance << endl;
+	//cout << "뽑은 수 : " << random << endl;
+	//system("pause");
+
+	if (chance >= random)
+	{
+		system("cls");
+		cout << "강화에 성공했습니다!" << endl;
+		cout << "<강화 전>" << endl;
+		printWeaponInfo(weapon);
+		float weight = weapon->level / 3.f;
+		weight = weight < 1 ? weight = 1 : weight;
+		weapon->level += 1;
+		weapon->attack += int(6 * weight);
+		weapon->price += int(30 * weight);
+		cout << "<강화 후>" << endl;
+		printWeaponInfo(weapon);
+		system("pause");
+	}
+	else
+	{
+		cout << "강화 실패!" << endl;
+		system("pause");
+	}
+
+
+
+}
+
+void EnhanceWeaponPage(CHARACTER* character)
+{
+	while (true)
+	{
+
+		system("cls");
+
+		cout << "무기 인벤토리" << "\n\n";
+	
+		cout << "<장착중> " << endl;
+		cout << "※장착중인 무기는 강화가 불가합니다." << endl;
+		printWeaponInfo(character->weapon);
+		cout << "\n\n";
+
+		int weaponCnt = character->inventory->weapons.size();
+		for (int i = 0; i < weaponCnt; ++i)
+		{
+			cout << "<" << i + 1 << "번>" << endl;
+			printWeaponInfo(character->inventory->weapons[i]);
+			cout << "강화확률: " << BASE_ENHANCE_CHANCE - (character->inventory->weapons[i]->level * 5.2f) << endl;
+			cout << "\n\n";
+		}
+
+
+		cout << "0. 나가기 아이템번호. 강화하기" << endl;
+		unsigned int selection;
+		cin >> selection;
+
+		//selection 1 2 3 4 5
+		//potion    0 1 2 3 4
+
+		if (0 == selection)
+		{
+			return;
+		}
+		//항목 번호를 제대로 입력했으면
+		else if (selection <= character->inventory->weapons.size())
+		{
+			//강화비
+			int cost = character->inventory->weapons[selection - 1]->price / 5;
+			//돈이 충분하면
+			if (character->gold >= cost)
+			{
+				character->gold -= cost;
+				//강화시도
+				EnhanceWeapon(character->inventory->weapons[selection - 1]);
+			}
+		}
+	}
 }

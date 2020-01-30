@@ -1,51 +1,12 @@
-﻿#include <iostream>
-#include <vector>
+﻿#include <crtdbg.h> // _CrtDumpMemoryLeaks() 사용하기위해
+#if _DEBUG 
+#define new new(_NORMAL_BLOCK, __FILE__, __LINE__) 
+#define malloc(s) _malloc_dbg(s, _NORMAL_BLOCK, __FILE__, __LINE__) 
+#endif // 몇행에서 메모리 누수가 나는지 알려줌. 
 using namespace std;
-
-typedef struct tagPotion
+int main()
 {
-	int id = 0;
-}POTION;
-
-typedef struct tagInventory
-{
-	vector<POTION*> potions;
-
-}INVENTORY;
-
-typedef struct tagChracter
-{
-
-	INVENTORY *inventory;
-
-}CHARACTER;
-
-
-CHARACTER* MakeCharacter()
-{
-	CHARACTER* c = new CHARACTER;
-	c->inventory = new INVENTORY;
-	return c;
+	int *a = new int; 
+	_CrtDumpMemoryLeaks(); // 메모리 누수 체크 
+	return 0; 
 }
-
-void main()
-{
-	
-	CHARACTER* c = MakeCharacter();
-
-	POTION* p = new POTION;
-	c->inventory->potions.push_back(p);
-
-	int size = c->inventory->potions.size();
-	cout << size << endl;
-	for (int i = 0; i < size; ++i)
-	{
-		delete c->inventory->potions[i];
-	}
-	delete c->inventory;
-}
-
-
-
-
-

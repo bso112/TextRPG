@@ -6,6 +6,14 @@
 #include <time.h>
 #include <vector>
 
+#include <crtdbg.h> // _CrtDumpMemoryLeaks() 사용하기위해
+#if _DEBUG 
+#define new new(_NORMAL_BLOCK, __FILE__, __LINE__) 
+#define malloc(s) _malloc_dbg(s, _NORMAL_BLOCK, __FILE__, __LINE__) 
+#endif // 몇행에서 메모리 누수가 나는지 알려줌. 
+
+//기본 무기 강화확률
+#define BASE_ENHANCE_CHANCE 80.0f
 //텍스트파일에서 데이터를 읽어올 때 한 줄의 최대 문자 수
 #define CHAR_PER_LINE 1000
 //텍스트파일에서 데이터를 읽어올 때 이름의 최대 문자 수
@@ -28,7 +36,7 @@ enum ePotion {HP, MP};
 
 typedef struct tagWeapon
 {
-	//아이템 아이디(1부터 시작)
+	//아이템 아이디(1부터 시작) 0은 맨손
 	int id = 0;
 	char GFX_PATH[GFX_PATH_LENGTH];
 	char name[ITEM_NAME_LENGTH];
@@ -38,6 +46,8 @@ typedef struct tagWeapon
 	int price;
 	//직업
 	eOccupation  occupation;
+	//강화레벨
+	int level = 1;
 }WEAPON;
 
 typedef struct tagPotion
@@ -51,10 +61,12 @@ typedef struct tagPotion
 	ePotion sort;
 }POTION;
 
+//인벤토리에 들어갈 자료형 추가시, Finalize함수에서 인벤토리 할당해제할때 그 자료형도 같이 해제해야함.
 typedef struct tagInventory
 {
 	//포션가방
 	vector<POTION*> potions;
+	//무기가방
 	vector<WEAPON*> weapons;
 
 }INVENTORY;
@@ -117,7 +129,7 @@ float StringToFloat(const char arr[]);
 //플레이어가 죽었을때
 void OnCharacterDie(CHARACTER* character);
 //게임을 종료할때 자원을 반환한다.
-void FinalizeGame(CHARACTER* character, WEAPON* weapons, POTION* potions);
+void FinalizeGame(CHARACTER* character, MONSTER* monsters, WEAPON* weapons, POTION* potions);
 void Save(CHARACTER* character);
 CHARACTER* Load();
 void EnterForge(CHARACTER* character, WEAPON* weapons, int weaponsCount);
@@ -139,3 +151,5 @@ void ShowInventory(CHARACTER* character);
 int GetInventorySize(INVENTORY inventory);
 void ShowPotionBag(CHARACTER* character);
 void ShowWeaponBag(CHARACTER* character);
+void EnhanceWeapon(WEAPON* weapon);
+void EnhanceWeaponPage(CHARACTER* character);
