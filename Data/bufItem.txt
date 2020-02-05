@@ -1,0 +1,6 @@
+*id,GFX_PATH,name,attackBuf,maxHealthBuf,levelBuf,expBuf,element,isConsumable,chance
+4
+1,../GFX/gem.txt,fire gem,10,10,0,0,0,0,this gem has power of fire,30,150
+2,../GFX/gem.txt,water gem,3,50,0,0,1,0,this gem has power of water,30,150
+3,../GFX/gem.txt,grass gem,5,30,0,0,2,0,this gem has power of grass,30,150
+4,../GFX/gem.txt,earth gem,7,10,0,0,3,0,this gem has power of earth,30,150

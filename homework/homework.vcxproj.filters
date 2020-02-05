@@ -16,24 +16,144 @@
     <Filter Include="소스 파일\TEXTRPG">
       <UniqueIdentifier>{c60b154d-f0eb-45c0-a916-4a25e1af7b83}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Character">
+      <UniqueIdentifier>{7ddc8b15-0158-45e7-8621-c7130e251c64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Weapon">
+      <UniqueIdentifier>{ec3209de-7a7b-4b40-a610-c092f5f9ff37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\BufItem">
+      <UniqueIdentifier>{a80fb573-5ed3-4947-9329-270eee30be33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Monster">
+      <UniqueIdentifier>{549cf748-631c-4db2-8ff1-af5cd9cb845f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Inventory">
+      <UniqueIdentifier>{6abfd31b-2c14-42e0-8c43-321282541676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Potion">
+      <UniqueIdentifier>{4221a230-ff14-4750-bb88-da4fea674765}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Factory">
+      <UniqueIdentifier>{76e936dc-2eb2-4f36-b8b7-9443ce0d46bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Parser">
+      <UniqueIdentifier>{d7bd5ef3-60e4-41aa-9cb1-07d9ae5c60df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Battle">
+      <UniqueIdentifier>{64aeadb6-0d93-42ca-920c-f996742baddd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Shop">
+      <UniqueIdentifier>{e51d1428-9334-4646-8802-42cf282db64c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\Equip">
+      <UniqueIdentifier>{6e53e21a-0c18-42a8-9200-59f06b7cc55e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\MainGame">
+      <UniqueIdentifier>{c93392ee-4ff2-4daa-9b96-8ffc6060b38a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="copyImg.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="rpg.cpp">
       <Filter>소스 파일\TEXTRPG</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Character.cpp">
+      <Filter>소스 파일\TEXTRPG\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapon.cpp">
+      <Filter>소스 파일\TEXTRPG\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="BufItem.cpp">
+      <Filter>소스 파일\TEXTRPG\BufItem</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>소스 파일\TEXTRPG\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Inventory.cpp">
+      <Filter>소스 파일\TEXTRPG\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="Potion.cpp">
+      <Filter>소스 파일\TEXTRPG\Potion</Filter>
+    </ClCompile>
+    <ClCompile Include="Factory.cpp">
+      <Filter>소스 파일\TEXTRPG\Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>소스 파일\TEXTRPG\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="BattleManager.cpp">
+      <Filter>소스 파일\TEXTRPG\Battle</Filter>
+    </ClCompile>
+    <ClCompile Include="Shop.cpp">
+      <Filter>소스 파일\TEXTRPG\Shop</Filter>
+    </ClCompile>
+    <ClCompile Include="EquipMgr.cpp">
+      <Filter>소스 파일\TEXTRPG\Equip</Filter>
+    </ClCompile>
+    <ClCompile Include="MainGame.cpp">
+      <Filter>소스 파일\TEXTRPG\MainGame</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="TextRPG.h">
-      <Filter>소스 파일\TEXTRPG</Filter>
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="constant.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="enums.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Character.h">
+      <Filter>소스 파일\TEXTRPG\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapon.h">
+      <Filter>소스 파일\TEXTRPG\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="Bufitem.h">
+      <Filter>소스 파일\TEXTRPG\BufItem</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>소스 파일\TEXTRPG\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>소스 파일\TEXTRPG\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="Potion.h">
+      <Filter>소스 파일\TEXTRPG\Potion</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>소스 파일\TEXTRPG\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="BattleManager.h">
+      <Filter>소스 파일\TEXTRPG\Battle</Filter>
+    </ClInclude>
+    <ClInclude Include="Shop.h">
+      <Filter>소스 파일\TEXTRPG\Shop</Filter>
+    </ClInclude>
+    <ClInclude Include="EquipMgr.h">
+      <Filter>소스 파일\TEXTRPG\Equip</Filter>
+    </ClInclude>
+    <ClInclude Include="MainGame.h">
+      <Filter>소스 파일\TEXTRPG\MainGame</Filter>
+    </ClInclude>
+    <ClInclude Include="Factory.h">
+      <Filter>소스 파일\TEXTRPG\Factory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

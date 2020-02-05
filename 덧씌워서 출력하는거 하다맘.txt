@@ -1,0 +1,38 @@
+
+void Paint(char src[GFX_PATH_LENGTH], char effect[GFX_PATH_LENGTH])
+{
+
+	FILE* fp;
+	errno_t err = fopen_s(&fp, "../src.jpg", "rt");
+
+	int col = 0, row = 0;
+	int tmp = 0;
+	int len = 0;
+	char c = ' ';
+	while (c != EOF)
+	{
+		char c = getc(fp);
+		if (c != '\n')
+		{
+			++tmp;
+		}
+		else
+		{
+			if (row < tmp)
+			{
+				row = tmp;
+			}
+		}
+
+		++len;
+	}
+
+	//EOFÁ¦¿Ü
+	--len;
+
+	col = len / row;
+
+	char(*canvas)[800] = new char[col][800];
+
+
+}
