@@ -40,17 +40,14 @@
     <Filter Include="소스 파일\TEXTRPG\Parser">
       <UniqueIdentifier>{d7bd5ef3-60e4-41aa-9cb1-07d9ae5c60df}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\TEXTRPG\Battle">
-      <UniqueIdentifier>{64aeadb6-0d93-42ca-920c-f996742baddd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\TEXTRPG\Shop">
-      <UniqueIdentifier>{e51d1428-9334-4646-8802-42cf282db64c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\TEXTRPG\Equip">
       <UniqueIdentifier>{6e53e21a-0c18-42a8-9200-59f06b7cc55e}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\TEXTRPG\MainGame">
       <UniqueIdentifier>{c93392ee-4ff2-4daa-9b96-8ffc6060b38a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\TEXTRPG\InventoryMgr">
+      <UniqueIdentifier>{d48ee5ad-f0c1-48ab-a04f-748db23ffe06}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -87,17 +84,14 @@
     <ClCompile Include="Parser.cpp">
       <Filter>소스 파일\TEXTRPG\Parser</Filter>
     </ClCompile>
-    <ClCompile Include="BattleManager.cpp">
-      <Filter>소스 파일\TEXTRPG\Battle</Filter>
-    </ClCompile>
-    <ClCompile Include="Shop.cpp">
-      <Filter>소스 파일\TEXTRPG\Shop</Filter>
-    </ClCompile>
     <ClCompile Include="EquipMgr.cpp">
       <Filter>소스 파일\TEXTRPG\Equip</Filter>
     </ClCompile>
     <ClCompile Include="MainGame.cpp">
       <Filter>소스 파일\TEXTRPG\MainGame</Filter>
+    </ClCompile>
+    <ClCompile Include="InventoryMgr.cpp">
+      <Filter>소스 파일\TEXTRPG\InventoryMgr</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,12 +134,6 @@
     <ClInclude Include="Parser.h">
       <Filter>소스 파일\TEXTRPG\Parser</Filter>
     </ClInclude>
-    <ClInclude Include="BattleManager.h">
-      <Filter>소스 파일\TEXTRPG\Battle</Filter>
-    </ClInclude>
-    <ClInclude Include="Shop.h">
-      <Filter>소스 파일\TEXTRPG\Shop</Filter>
-    </ClInclude>
     <ClInclude Include="EquipMgr.h">
       <Filter>소스 파일\TEXTRPG\Equip</Filter>
     </ClInclude>
@@ -154,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="Factory.h">
       <Filter>소스 파일\TEXTRPG\Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="InventoryMgr.h">
+      <Filter>소스 파일\TEXTRPG\InventoryMgr</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
