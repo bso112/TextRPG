@@ -13,5 +13,5 @@ public:
 
 public:
 
-	void printPotionInfo();
+	void printPotionInfo() const;
 };

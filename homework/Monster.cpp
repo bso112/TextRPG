@@ -2,7 +2,27 @@
 #include "Monster.h"
 #include "Parser.h"
 
-void CMonster::PrintMonster() {
+CMonster::CMonster()
+{
+	id = 0;
+	strcpy_s(name, ITEM_NAME_LENGTH, "");
+	strcpy_s(GFX_PATH, ITEM_NAME_LENGTH, "");
+	attack = 0;
+	maxHealth = 0;
+	currHealth = 0;
+	exp = 0;
+	gold = 0;
+	habitat = HABITAT_END;
+	spawnChance = 0;
+	element = ELEMENT_END;
+
+}
+
+CMonster::~CMonster()
+{
+}
+
+void CMonster::PrintMonster() const {
 
 	CParser parser;
 	if (strcmp(GFX_PATH, "") != 0)

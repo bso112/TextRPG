@@ -1,4 +1,4 @@
-*id,GFX_PATH,name,attackBuf,maxHealthBuf,levelBuf,expBuf,element,isConsumable,chance
+*id,GFX_PATH,name,attackBuf,maxHealthBuf,levelBuf,expBuf,element,isConsumable,chance, price
 4
 1,../GFX/gem.txt,fire gem,10,10,0,0,0,0,this gem has power of fire,30,150
 2,../GFX/gem.txt,water gem,3,50,0,0,1,0,this gem has power of water,30,150

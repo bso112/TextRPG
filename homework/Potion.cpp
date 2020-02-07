@@ -3,7 +3,7 @@
 #include "Parser.h"
 
 
-void CPotion::printPotionInfo()
+void CPotion::printPotionInfo() const
 {
 	CParser parser;
 	cout << "\n\n";

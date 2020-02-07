@@ -1,23 +1,29 @@
 #pragma once
-#include "Character.h"
-#include "Factory.h"
-#include "InventoryMgr.h"
+
+class CCharacter;
+class CFactory;
+class CInventoryMgr;
+class CMonster;
+class CField;
 
 class CMainGame
 {
 private:
 	void EnterForge();
 	void EnterPharmacy();
-	void EnterDungeon(HABITAT habitat);
 	void EnhanceWeaponPage();
-	COMBAT Battle(CCharacter* character, CMonster* monster);
-public:
-	void Initalize();
-	void Progress();
+	bool SelectPlayer();
 	void Release();
+	void Load();
+	void Save();
+public:
+	CMainGame();
+	~CMainGame();
+	void Progress();
 private:
-	CCharacter* character;
-	CFactory factory;
-	CInventoryMgr inventoryMgr;
+	CCharacter* m_pCharacter;
+	CFactory* m_pFactory;
+	CInventoryMgr* m_pInventoryMgr;
+	CField* m_pField;
 
 };

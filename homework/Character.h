@@ -1,8 +1,7 @@
 #pragma once
 #include "stdafx.h"
-#include "Inventory.h"
 
-
+class CInventory;
 class CCharacter
 {
 
@@ -15,14 +14,17 @@ public:
 	int maxExp;
 	int currExp;
 	int gold;
-	CInventory inventory;
+	CInventory* inventory;
 	OCCUPATION  occupation;
 
 public:
 
+	CCharacter();
+	~CCharacter();
+
 	void CreateCharacter(int selection);
 
-	void PrintCharacter();
+	void PrintCharacter() const;
 
 	void LevelUp();
 

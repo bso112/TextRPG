@@ -1,8 +1,33 @@
 #include "stdafx.h"
 #include "Weapon.h"
 #include "Parser.h"
+#include "BufItem.h"
 
-void CWeapon::printWeaponInfo()
+CWeapon::CWeapon()
+{
+	id = 0;
+	strcpy_s(GFX_PATH, ITEM_NAME_LENGTH, "");
+	strcpy_s(name, ITEM_NAME_LENGTH, "맨손");
+	strcpy_s(description, ITEM_NAME_LENGTH, "");
+	price = 0;
+	attack = 0;
+	level = 1;
+	occupation = OCCUPATION_END;
+	element = ELEMENT_END;
+	gem = new CBufItem; 
+}
+
+CWeapon::~CWeapon()
+{
+	//cout << "웨폰 소멸자 호출!" << endl;
+	//system("pause");
+	if (gem)
+	{
+		delete gem;
+	}
+}
+
+void CWeapon::printWeaponInfo() const
 {
 	if (0 == id)
 	{
@@ -23,7 +48,7 @@ void CWeapon::printWeaponInfo()
 	cout << "직업: " << occupation << '\n';
 	char arr2[16] = "";
 	parser.ElementToString(element, arr2);
-	cout << "속성: " << element << endl;
+	cout << "속성: " << arr2 << endl;
 	cout << "젬: " << gem->name << endl;
 	cout << '\n' << "==========================================================================================" << endl;
 }

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Parser.h"
 
 bool CParser::StringToBool(const char arr[])
@@ -111,7 +112,7 @@ void CParser::ElementToString(ELEMENT element, char result[16])
 	case EARTH:
 		strcpy_s(result, 16, "¶¥");
 		break;
-	case NONE:
+	case ELEMENT_END:
 		strcpy_s(result, 16, "¹«");
 		break;
 	default:

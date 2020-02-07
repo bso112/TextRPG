@@ -4,8 +4,8 @@
 class CMonster
 {
 public:
-	//1부터 시작
-	int id = 0;
+	// 1부터 시작
+	int id;
 	char name[ITEM_NAME_LENGTH];
 	char GFX_PATH[GFX_PATH_LENGTH];
 	int attack;
@@ -16,9 +16,11 @@ public:
 	//서식지
 	HABITAT habitat;
 	float spawnChance;
-	ELEMENT element = NONE;
+	ELEMENT element;
 
 public:
-	void PrintMonster();
+	CMonster();
+	~CMonster();
+	void PrintMonster() const;
 	
 };

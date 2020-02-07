@@ -1,14 +1,17 @@
 #pragma once
-#include "Character.h"
-#include "Inventory.h"
+
+
+class CCharacter;
+class CInventory;
 
 class CInventoryMgr
 {
 private:
-	CCharacter* character;
-	CInventory* inventory;
+	CCharacter* m_pCharacter;
+	CInventory* m_pInventory;
 public:
-	void Initialize(CCharacter* _character);
+	CInventoryMgr(CCharacter* _character);
+	~CInventoryMgr();
 	void Process();
 	void Release();
 private:

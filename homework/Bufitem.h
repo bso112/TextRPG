@@ -22,6 +22,7 @@ public:
 	//АЁАн
 	int price;
 public:
-
-	void PrintGemInfo();
+	CBufItem();
+	~CBufItem();
+	void PrintGemInfo() const;
 };

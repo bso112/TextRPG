@@ -1,5 +1,10 @@
 #include "stdafx.h"
 #include "Factory.h"
+#include "Bufitem.h"
+#include "Weapon.h"
+#include "Potion.h"
+#include "Monster.h"
+
 
 int CFactory::GetInfo(char(**items)[CHAR_PER_LINE], char path[30])
 {
@@ -149,7 +154,7 @@ void CFactory::CreateAllWeapons()
 		weapons[i].gem = new CBufItem;
 		(*weapons[i].gem) = {};
 		strcpy_s(weapons[i].gem->name, ITEM_NAME_LENGTH, "부착안함");
-		weapons[i].element = NONE;
+		weapons[i].element = ELEMENT_END;
 
 	}
 
@@ -354,46 +359,105 @@ void CFactory::CreateAllbufItems()
 	bufItemCnt = itemCount;
 }
 
-void CFactory::Initialize()
-{
-	CreateAllWeapons();
-	CreateAllPotions();
-	CreateAllPotions();
-	CreateAllbufItems();
-}
-
 void CFactory::Release()
 {
-	if (weapons != nullptr)
+	if (weapons)
 	{
 		delete[] weapons;
 	}
-	if (potions != nullptr)
+	if (potions)
 	{
 		delete[] potions;
 	}
-	if (monsters != nullptr)
+	if (monsters)
 	{
 		delete[] monsters;
 	}
-	if (bufItems != nullptr)
+	if (bufItems)
 	{
 		delete[] bufItems;
 	}
 }
 
+CFactory::CFactory()
+{
+	CreateAllWeapons();
+	CreateAllPotions();
+	CreateAllMonsters();
+	CreateAllbufItems();
+}
+
+CFactory::~CFactory()
+{
+	Release();
+}
+
+const CWeapon * const CFactory::GetWeapons() const
+{
+
+	return weapons;
+}
+
+const CMonster * const CFactory::GetMonsters() const
+{
+	return monsters;
+}
+
+const CPotion * const CFactory::GetPotions() const
+{
+	return potions;
+}
+
+const CBufItem * const CFactory::GetBufitems() const
+{
+	return bufItems;
+}
+
+
+
+int CFactory::GetWeaponsSize() const
+{
+	return weaponCnt;
+}
+
+int CFactory::GetMonstersSize() const
+{
+	return monsterCnt;
+}
+
+int CFactory::GetPotionsSize() const
+{
+	return potionCnt;
+}
+
+int CFactory::GetBufItemsSize() const
+{
+	return bufItemCnt;
+}
+
 
 CWeapon* CFactory::CreateWeapon(int id)
 {
+	CWeapon* weapon;
 	//만약 id가 0이면 빈껍데기 만들기
 	if (0 == id)
 	{
-		CWeapon* weapon = new CWeapon;
-		*weapon = {};
+		weapon = new CWeapon;
 	}
-	//id에 해당하는 무기 리턴
-	CWeapon* weapon = new CWeapon;
-	memcpy(weapon, &(weapons[id - 1]), sizeof(CWeapon));
+	else
+	{
+		//id에 해당하는 무기 리턴
+		weapon = new CWeapon;
+		//원본의 젬에 대한 포인터까지 복사한다.(얕은복사)
+		memcpy(weapon, &(weapons[id - 1]), sizeof(CWeapon));
+		//원본 젬의 데이터만 뽑아냄
+		CBufItem gemData = *(weapon->gem);
+		//새로운 주소에 젬을 생성
+		weapon->gem = new CBufItem;
+		//그 주소에 젬 데이터를 복사.(깊은복사)
+		*(weapon->gem) = gemData;
+	}
+	
 	return weapon;
 
 }
@@ -408,8 +472,10 @@ CMonster* CFactory::CreateMonster(int id)
 }
 
 
-CMonster* CFactory::CreateMonster(int length, HABITAT habitat)
+CMonster* CFactory::CreateMonster(HABITAT habitat)
 {
+
+	int length = monsterCnt;
 
 	//같은 서식지에 사는 몬스터들의 id. 최대 length(모든 몬스터의 수)만큼 있다.
 	int* family = new int[length];
@@ -504,10 +570,11 @@ CBufItem* CFactory::CreateBufItem(int id)
 }
 
 
-CBufItem* CFactory::CreateDropItem(int length)
+CBufItem* CFactory::CreateDropItem()
 {
 	float chanceSum = 0;
 
+	int length = bufItemCnt;
 	//오름차순 정렬
 	for (int i = 0; i < length; ++i)
 	{

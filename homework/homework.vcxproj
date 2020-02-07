@@ -148,8 +148,8 @@
   <ItemGroup>
     <ClCompile Include="BufItem.cpp" />
     <ClCompile Include="Character.cpp" />
-    <ClCompile Include="EquipMgr.cpp" />
     <ClCompile Include="Factory.cpp" />
+    <ClCompile Include="Field.cpp" />
     <ClCompile Include="Inventory.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -177,8 +177,8 @@
     <ClInclude Include="Character.h" />
     <ClInclude Include="constant.h" />
     <ClInclude Include="enums.h" />
-    <ClInclude Include="EquipMgr.h" />
     <ClInclude Include="Factory.h" />
+    <ClInclude Include="Field.h" />
     <ClInclude Include="Inventory.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
